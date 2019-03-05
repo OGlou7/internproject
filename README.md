@@ -9,7 +9,7 @@
 ##### WHAT ARE YOU DOING TODAY ?
 ##### DID YOU HAVE ANY PROBLEM DOING IT ?
 ##### ANY QUESTIONS ?
-### KANBAN 
+### KANBAN https://github.com/OGlou7/internproject/projects/1
 
 
 ## Don't forget to :
