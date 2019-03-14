@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">GoogleMapApi</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="google_maps_key">AIzaSyCJ26yVdF8bNb8OVkq7TqVaS7fGVkwqLlM</string>
+    <string name="invalid_lat_long_used">invalid coordinate used</string>
+    <string name="service_not_available">Service not available</string>
+    <string name="no_address_found">No address found</string>
+    <string name="address_found">Address found</string>
+    <string name="no_geocoder_available">No Geocoder available</string>
+    <string name="str_btn_find">Search Location</string>
+    <string name="findButton">Find</string>
+    <string name="label_activity_main">MobileGo</string>
+    <string name="mapbox_accesstoken">pk.eyJ1Ijoia21hZG9yZXQiLCJhIjoiY2p0NW9kZWVwMDdkbTQ0b2N5NHE2ZjJqNyJ9.VAF5CxvnffAjgWJlOoFstA</string>
+
+
+    <string name="user_location_permission_explanation">This app needs location permissions in order to show its functionality.</string>
+    <string name="user_location_permission_not_granted">You didn\'t grant location permissions.</string>
+    <string name="prev">Previous</string>
+    <string name="next">Next</string>
+    <string name="no_maneuver_narrative">No maneuver narrative</string>
+    <string name="arrive_destination">You have arrived at your destination!</string>
+    <string name="calendar_title">Calendar</string>
+
+
+    <string name="current_date">June, 2016</string>
+    <string name="add_event">ADD CALENDAR EVENT</string>
+    <string name="sun">DIM</string>
+    <string name="mon">LUN</string>
+    <string name="tue">MAR</string>
+    <string name="wed">MER</string>
+    <string name="thu">JEU</string>
+    <string name="fri">VEN</string>
+    <string name="sat">SAM</string>
+    <string name="last_date">30</string>
+    <string name="button_today">TODAY</string>
+    <string name="new_reservation">NEW RESERVATION</string>
+</resources>

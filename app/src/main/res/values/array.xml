@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="Address_client">
+        <item>89 Chemin de la Hunière, Palaiseau;Client1</item>
+        <item>11 Rue Léon Bertault, Palaiseau;Client2</item>
+        <item>1548 Salado Dr;Client4</item>
+        <item>1396 Charleston Rd;Client3</item>
+    </string-array>
+</resources>

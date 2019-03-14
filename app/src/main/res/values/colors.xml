@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+    <color name="popupBackground">#0066cc</color>
+
+    <color name="Blue">#4264fb</color>
+    <color name="GrayLight">#c6d2e1</color>
+    <color name="Pink">#ee4e8b</color>
+    <color name="Yellow">#d9d838</color>
+    <color name="Red">#b43b71</color>
+    <color name="GreenAndroid">#A4C639</color>
+    <color name="GreenCalendar">#839e2e</color>
+</resources>
