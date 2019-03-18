@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_today"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="@string/gototoday"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_add"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="add"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_settings1"
+        android:title="@string/day_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings2"
+        android:title="3 Days view"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings3"
+        android:title="Month view"
+        app:showAsAction="never" />
+</menu>

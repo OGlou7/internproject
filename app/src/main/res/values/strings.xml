@@ -15,8 +15,8 @@
 
     <string name="user_location_permission_explanation">This app needs location permissions in order to show its functionality.</string>
     <string name="user_location_permission_not_granted">You didn\'t grant location permissions.</string>
-    <string name="prev">Previous</string>
-    <string name="next">Next</string>
+    <string name="prev">Options</string>
+    <string name="next">Test</string>
     <string name="no_maneuver_narrative">No maneuver narrative</string>
     <string name="arrive_destination">You have arrived at your destination!</string>
     <string name="calendar_title">Calendar</string>
@@ -34,4 +34,6 @@
     <string name="last_date">30</string>
     <string name="button_today">TODAY</string>
     <string name="new_reservation">NEW RESERVATION</string>
+    <string name="day_view">Day view</string>
+    <string name="gototoday">goToToday</string>
 </resources>

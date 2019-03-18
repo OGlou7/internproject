@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <bitmap
+            android:gravity="left"
+            android:tint="@android:color/holo_green_dark"
+            android:src="@drawable/ic_home_garage" />
+    </item>
+
+    <item android:left="40dp">
+        <bitmap
+            android:tint="@android:color/holo_blue_dark"
+            android:src="@drawable/ic_home_garage"/>
+    </item>
+</layer-list>

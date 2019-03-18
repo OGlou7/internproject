@@ -177,7 +177,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
             element.put("address", addressClientToDisplay[0]);
             element.put("clientName", addressClientToDisplay[1]);
             listAddress.add(element);
-
         }
 
         ListAdapter adapter = new SimpleAdapter(this,
@@ -275,9 +274,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
 
 
        btn_prev.setOnClickListener(v -> {
-           Intent tierActivite = new Intent(MainActivity2.this, WeekActivity.class);
-           // On associe l'identifiant à notre intent
-           startActivityForResult(tierActivite, CHOOSE_BUTTON_REQUEST);
 //            //displayManeuver(displayingManeuverIndex - 1);
 ////            v_maneuver.setText(Html.fromHtml(html_instructions.get(0)) + " -- " + maneuver.get(0));
 ////            btn_prev.setVisibility(10);

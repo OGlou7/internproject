@@ -15,30 +15,7 @@
             android:id="@+id/back"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:src="@drawable/ic_baseline_chevron_left_24px" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/title_activity_maps"
-            android:textSize="20sp"
-            android:textColor="@color/colorBlack"
-            />
-        <Button
-            android:id="@+id/today"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:text="@string/button_today"
-            />
-        <Button
-            android:id="@+id/newReservation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:text="@string/new_reservation"
-            />
+            android:src="@drawable/ic_round_swap_horiz_24px" />
     </android.support.v7.widget.Toolbar>
 
     <com.alamkanak.weekview.WeekView
