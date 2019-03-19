@@ -8,14 +8,20 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:minHeight="?attr/actionBarSize"
-        android:background="@color/quantum_grey200"
+        android:background="@color/Blue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/back"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
+            android:tint="@color/toolbar_icon_color"
             android:src="@drawable/ic_round_swap_horiz_24px" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/toolbar_icon_color"
+            android:text="Switch Mode"/>
     </android.support.v7.widget.Toolbar>
 
     <com.alamkanak.weekview.WeekView

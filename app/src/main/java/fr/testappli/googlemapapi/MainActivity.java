@@ -16,9 +16,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -66,7 +68,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 
-public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5445;
 
@@ -78,9 +80,8 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
     private Address currentAddress;
     private boolean firstTimeFlag = true;
     private ArrayList<HashMap<String, String>> listAddress = new ArrayList<>();
+    private AutocompleteSupportFragment autocompleteFragment;
 
-    private Button btn_prev;
-    private Button btn_next;
     private ImageView img_maneuver;
     private TextView tv_maneuver;
 
@@ -89,7 +90,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
     private ArrayList<String> maneuver = new ArrayList<>();
     private ArrayList<String> html_instructions = new ArrayList<>();
 
-    private Button mPasserelle = null;
     // L'identifiant de notre requête
     public final static int CHOOSE_BUTTON_REQUEST = 0;
     // L'identifiant de la chaîne de caractères qui contient le résultat de l'intent
@@ -107,18 +107,19 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         // Maneuvers Display and controls
         tv_maneuver = findViewById(R.id.tv_manouver);
         img_maneuver = findViewById(R.id.im_manouver);
-        btn_prev = findViewById(R.id.btn_prev);
-        btn_next = findViewById(R.id.btn_next);
+        tv_maneuver.setVisibility(View.GONE);
+        img_maneuver.setVisibility(View.GONE);
 
-
-        mPasserelle = findViewById(R.id.passerelle);
-
-        mPasserelle.setOnClickListener(v -> {
-            Intent secondeActivite = new Intent(MainActivity2.this, CalendarActivity.class);
-            // On associe l'identifiant à notre intent
-            startActivityForResult(secondeActivite, CHOOSE_BUTTON_REQUEST);
+        ImageView imageReturn = findViewById(R.id.switch_mode);
+        imageReturn.setOnClickListener(v -> {
+            Intent calendarActivity = new Intent(MainActivity.this, CalendarActivity.class);
+            startActivityForResult(calendarActivity, CHOOSE_BUTTON_REQUEST);
         });
 
+        // Handle Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
 
         // Handle map configuration
         assert supportMapFragment != null;
@@ -130,12 +131,13 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
             Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         }
 
-        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+        autocompleteFragment = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
         assert autocompleteFragment != null;
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
 
+        Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -154,6 +156,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
                         search(addresses);
                         Log.e("testtest8", addresses.toString());
                     }
+                    Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
                 } catch (Exception e) {
                     Log.e("Error", "Address not found : ");
                 }
@@ -259,7 +262,37 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_map, menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                Toast.makeText(getApplicationContext(), "Search", Toast.LENGTH_SHORT).show();
+                if(autocompleteFragment.isVisible())
+                    Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
+                else
+                    Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.VISIBLE);
+                return true;
+            case R.id.action_settings1:
+                Intent logIn = new Intent(MainActivity.this, LoginActivity.class);
+                startActivityForResult(logIn, CHOOSE_BUTTON_REQUEST);
+                return true;
+            case R.id.action_settings2:
+                Intent register = new Intent(MainActivity.this, RegisterActivity.class);
+                startActivityForResult(register, CHOOSE_BUTTON_REQUEST);
+                return true;
+            case R.id.action_settings3:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
@@ -271,20 +304,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
                 postDirectionRequestFromLatLong(getLatLongFromAddressString(getApplicationContext(), marker.getTitle()));
             return false;
         });
-
-
-       btn_prev.setOnClickListener(v -> {
-//            //displayManeuver(displayingManeuverIndex - 1);
-////            v_maneuver.setText(Html.fromHtml(html_instructions.get(0)) + " -- " + maneuver.get(0));
-////            btn_prev.setVisibility(10);
-////            btn_next.setVisibility(10);
-////            autocompleteFragment.getView().setVisibility(View.GONE);
-//        });
-//
-//        btn_next.setOnClickListener(v -> {
-//            //displayManeuver(displayingManeuverIndex + 1);
-        });
-
     }
 
 
@@ -487,7 +506,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         locationRequest.setInterval(50000);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity2.this,
+                ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                 return;
@@ -584,7 +603,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         @Override
         public void onClick(View view) {
             if (view.getId() == R.id.currentLocationImageButton && googleMap != null && currentLocation != null)
-                MainActivity2.this.animateCamera(currentLocation);
+                MainActivity.this.animateCamera(currentLocation);
         }
     };
 

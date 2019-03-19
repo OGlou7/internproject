@@ -35,7 +35,7 @@
         <!--"com.google.android.geo.API_KEY"-->
 
         <activity
-            android:name=".MainActivity2"
+            android:name=".MainActivity"
             android:label="@string/label_activity_main"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
@@ -44,6 +44,20 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/login_title"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".RegisterActivity"
+            android:label="@string/register_title"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
         </activity>
 
         <activity

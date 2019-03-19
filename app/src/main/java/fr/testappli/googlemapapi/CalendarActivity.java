@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,14 +53,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CalendarActivity extends AppCompatActivity {
-    private ImageButton ib_startDate = null;
-    private ImageButton ib_endDate = null;
 
-    private TimePicker starttimepicker = null;
-    private TimePicker endtimepicker = null;
+    private TimePicker starttimepicker;
+    private TimePicker endtimepicker;
 
     private com.applandeo.materialcalendarview.CalendarView calendarView = null;
-    private List<EventDay> events = new ArrayList<>();
+    private ArrayList<EventDay> events = new ArrayList<>();
     private Calendar currentCalendar = null;
 
     private PopupWindow mPopupWindow;
@@ -74,6 +73,7 @@ public class CalendarActivity extends AppCompatActivity {
 
     public final static int CHOOSE_BUTTON_REQUEST = 0;
     public final static int TIME_PICKER_INTERVAL = 30;
+    public final static Bundle NEW_EVENTS = new Bundle();
 
     private ArrayList<Reservation> reservationArrayList = new ArrayList<>();
 
@@ -99,7 +99,9 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView.setEvents(events);
         List<Calendar> selectedDates = calendarView.getSelectedDates();
         Calendar selectedDate = calendarView.getFirstSelectedDate();*/
-
+        calendarView.setHeaderColor(R.color.calendar_header);
+        calendarView.setHeaderLabelColor(R.color.colorBlack);
+        //calendarView.setPreviousButtonImage;
         calendarView.setOnDayClickListener(eventDay -> {
             Calendar clickedDayCalendar = eventDay.getCalendar();
             //events.add(new EventDay(clickedDayCalendar, R.drawable.ic_action_refresh));
@@ -108,6 +110,15 @@ public class CalendarActivity extends AppCompatActivity {
             events.add(new EventDay(clickedDayCalendar, R.drawable.single_icon));
             calendarView.setEvents(events);
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e("TESTTEST", String.valueOf(requestCode));
+        Log.e("TESTTEST", String.valueOf(resultCode));
+        Bundle bundle = data.getExtras();
+        events = (ArrayList<EventDay>) bundle.getSerializable("events");
+        calendarView.setEvents(events);
     }
 
     @Override
@@ -188,7 +199,6 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
 
-
     private void newReservation(){
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 
@@ -196,22 +206,26 @@ public class CalendarActivity extends AppCompatActivity {
 
         mPopupWindow = new PopupWindow(
                 customView,
-                ActionBar.LayoutParams.WRAP_CONTENT,
-                ActionBar.LayoutParams.WRAP_CONTENT
+                ActionBar.LayoutParams.MATCH_PARENT,
+                ActionBar.LayoutParams.MATCH_PARENT
         );
 
         mPopupWindow.setFocusable(true);
         mPopupWindow.update();
 
         TextView et_startdate = customView.findViewById(R.id.et_startdate);
-        et_startdate.setText(new SimpleDateFormat("dd-MM-yyyy").format(currentCalendar.getTime()));
-        startDate = stringToDate(et_startdate.getText().toString());
+        //et_startdate.setText(new SimpleDateFormat("dd-MM-yyyy").format(currentCalendar.getTime()));
+        //startDate = stringToDate(et_startdate.getText().toString());
+        et_startdate.setText("Start Date");
+        startDate = currentCalendar.getTime();
 
         TextView et_enddate = customView.findViewById(R.id.et_enddate);
-        et_enddate.setText(new SimpleDateFormat("dd-MM-yyyy").format(currentCalendar.getTime()));
-        endDate = stringToDate(et_enddate.getText().toString());
+        //et_enddate.setText(new SimpleDateFormat("dd-MM-yyyy").format(currentCalendar.getTime()));
+        //endDate = stringToDate(et_enddate.getText().toString());
+        et_enddate.setText("End Date  ");
+        endDate = currentCalendar.getTime();
 
-        ib_startDate = customView.findViewById(R.id.ib_startdate);
+        ImageButton ib_startDate = customView.findViewById(R.id.ib_startdate);
         ib_startDate.setOnClickListener(b -> {
             DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
                 yearPicked = calendars.get(0).get(Calendar.YEAR);
@@ -226,7 +240,7 @@ public class CalendarActivity extends AppCompatActivity {
             datePicker.show();
         });
 
-        ib_endDate = customView.findViewById(R.id.ib_enddate);
+        ImageButton ib_endDate = customView.findViewById(R.id.ib_enddate);
         ib_endDate.setOnClickListener(b -> {
             DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
                 yearPicked = calendars.get(0).get(Calendar.YEAR);
@@ -255,6 +269,16 @@ public class CalendarActivity extends AppCompatActivity {
 
             if(et_country.getText().toString().isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Country is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(et_startdate.getText().toString().equals("Start Date")) {
+                Toast.makeText(getApplicationContext(), "Invalid start date", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(et_enddate.getText().toString().equals("End Date  ")) {
+                Toast.makeText(getApplicationContext(), "Invalid end date", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -290,8 +314,9 @@ public class CalendarActivity extends AppCompatActivity {
         ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
         ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
 
-        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mPopupWindow.showAtLocation(mRelativeLayout, Gravity.CENTER,0,0);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
 

@@ -17,10 +17,12 @@
             android:id="@+id/back"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
+            android:tint="@color/toolbar_icon_color"
             android:src="@drawable/ic_round_swap_horiz_24px" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/toolbar_icon_color"
             android:text="Switch Mode"/>
     </android.support.v7.widget.Toolbar>
 
@@ -29,6 +31,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:type="one_day_picker"
+        app:previousButtonSrc="@drawable/ic_baseline_chevron_left_24px"
+        app:forwardButtonSrc="@drawable/ic_baseline_chevron_right"
         app:eventsEnabled="true"
         />
 </LinearLayout>
