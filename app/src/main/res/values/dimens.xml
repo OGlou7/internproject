@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text -->
+    <dimen name="smallText">12sp</dimen>
+    <dimen name="normalText">18sp</dimen>
+    <dimen name="largeText">24sp</dimen>
+    <dimen name="xlargeText">30sp</dimen>
+
+    <!-- Margin -->
+    <dimen name="tinyMargin">3dp</dimen>
+    <dimen name="smallMargin">10dp</dimen>
+    <dimen name="baseMargin">20dp</dimen>
+
+    <!-- Padding -->
+    <dimen name="tinyPadding">10dp</dimen>
+    <dimen name="smallPadding">15dp</dimen>
+    <dimen name="basePadding">20dp</dimen>
+</resources>

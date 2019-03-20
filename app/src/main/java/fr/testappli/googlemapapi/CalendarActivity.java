@@ -99,7 +99,7 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView.setEvents(events);
         List<Calendar> selectedDates = calendarView.getSelectedDates();
         Calendar selectedDate = calendarView.getFirstSelectedDate();*/
-        calendarView.setHeaderColor(R.color.calendar_header);
+        calendarView.setHeaderColor(R.color.calendar_header_color);
         calendarView.setHeaderLabelColor(R.color.colorBlack);
         //calendarView.setPreviousButtonImage;
         calendarView.setOnDayClickListener(eventDay -> {
@@ -259,6 +259,7 @@ public class CalendarActivity extends AppCompatActivity {
         EditText et_description = customView.findViewById(R.id.et_description);
         EditText et_address = customView.findViewById(R.id.et_address);
         EditText et_country = customView.findViewById(R.id.et_country);
+        EditText et_city = customView.findViewById(R.id.et_city);
 
         Button b_register = customView.findViewById(R.id.b_register);
         b_register.setOnClickListener(view -> {
@@ -282,6 +283,11 @@ public class CalendarActivity extends AppCompatActivity {
                 return;
             }
 
+            if(et_city.getText().toString().isEmpty()) {
+                Toast.makeText(getApplicationContext(), "City is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             long newStartDate = startDate.getTime() + (starttimepicker.getHour()*60 + starttimepicker.getMinute()*30)*60*1000;
             long newEndDate = endDate.getTime() + (endtimepicker.getHour()*60 + endtimepicker.getMinute()*30)*60*1000;
             if(newStartDate >= newEndDate){
@@ -292,7 +298,8 @@ public class CalendarActivity extends AppCompatActivity {
             startDate.setTime(startDate.getTime() + (starttimepicker.getHour()*60 + starttimepicker.getMinute()*30)*60*1000);
             endDate.setTime(endDate.getTime() + (endtimepicker.getHour()*60 + endtimepicker.getMinute()*30)*60*1000);
 
-            reservationArrayList.add(new Reservation(et_address.getText().toString() + "," + et_country.getText().toString(), startDate, endDate, et_description.getText().toString()));
+            reservationArrayList.add(new Reservation(et_address.getText().toString() + ", " + et_city.getText().toString() + ", " + et_country.getText().toString(),
+                    startDate, endDate, et_description.getText().toString(), 2.4));
 
             ArrayList<Date> daysBetween = getDaysBetween(startDate, endDate);
             for(Date day : daysBetween){

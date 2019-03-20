@@ -1,0 +1,76 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card_view:cardCornerRadius="8dp"
+    android:layout_margin="@dimen/tinyMargin">
+    <RelativeLayout
+        android:id = "@+id/parent"
+        android:layout_width = "match_parent"
+        android:layout_height = "match_parent"
+        android:layout_gravity = "center"
+        android:orientation = "vertical"
+        android:background="@color/myGreen">
+        <ImageView
+            android:id="@+id/iv_image"
+            android:layout_width="124dp"
+            android:layout_height="124dp"
+            android:src="@android:drawable/ic_menu_report_image"/>
+        <TextView
+            android:id = "@+id/tv_address"
+            android:layout_toEndOf="@+id/iv_image"
+            android:layout_width = "wrap_content"
+            android:layout_height = "wrap_content"
+            android:gravity = "center"
+            android:textSize = "@dimen/largeText"
+            android:textColor = "@color/myLightGrey"
+            android:text="Address"/>
+        <TextView
+            android:id = "@+id/tv_city"
+            android:layout_toEndOf="@+id/iv_image"
+            android:layout_below="@+id/tv_address"
+            android:layout_width = "wrap_content"
+            android:layout_height = "wrap_content"
+            android:gravity = "center"
+            android:textSize = "@dimen/largeText"
+            android:textColor = "@color/myLightGrey"
+            android:text="Country" />
+        <TextView
+            android:id = "@+id/tv_price"
+            android:layout_below="@+id/tv_city"
+            android:layout_toEndOf="@+id/iv_image"
+            android:layout_width = "wrap_content"
+            android:layout_height = "wrap_content"
+            android:textStyle="bold"
+            android:textSize = "@dimen/xlargeText"
+            android:textColor = "@color/myRed"
+            android:text="Price" />
+        <!--<ImageView
+            android:id="@+id/iv_navigate"
+            android:layout_below="@+id/tv_city"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_round_navigation"
+            android:tint="@color/toolbar_icon_color"/>-->
+
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/iv_navigate"
+            android:layout_below="@+id/tv_city"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/smallMargin"
+            android:layout_marginEnd="@dimen/smallMargin"
+            android:src="@drawable/ic_round_navigation"
+            android:layout_alignParentEnd="true"
+            app:backgroundTint="@color/myRed"
+            app:borderWidth="0dp"
+            app:elevation="6dp"
+            app:pressedTranslationZ="12dp"
+            app:fabSize="normal" />
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

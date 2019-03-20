@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Application color -->
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <!-- Widget color -->
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
-    <color name="popupBackground">#0066cc</color>
     <color name="toolbar_icon_color">@color/quantum_grey200</color>
-    <color name="calendar_header">@color/quantum_grey200</color>
-
-    <color name="Blue">#4264fb</color>
-    <color name="GrayLight">#c6d2e1</color>
-    <color name="Pink">#ee4e8b</color>
-    <color name="Yellow">#d9d838</color>
-    <color name="Red">#b43b71</color>
-    <color name="GreenAndroid">#A4C639</color>
-    <color name="GreenCalendar">#839e2e</color>
+    <color name="calendar_header_color">@color/quantum_grey200</color>
+    <color name="myBlue">#4264fb</color>
+    <color name="myOrange">#fc642d</color>
+    <color name="myDarkGrey">#484848</color>
+    <color name="myLightGrey">#ffefefef</color>
+    <color name="myGreen">#008577</color>
+    <color name="myRed">#ff5a5f</color>
 </resources>

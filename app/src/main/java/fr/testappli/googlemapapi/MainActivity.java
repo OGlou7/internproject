@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.icu.util.Calendar;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -16,6 +17,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -60,8 +63,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -73,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5445;
 
     private GoogleMap googleMap;
-    ListView mListView;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Marker currentLocationMarker;
     private Location currentLocation;
@@ -89,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private JSONArray steps;
     private ArrayList<String> maneuver = new ArrayList<>();
     private ArrayList<String> html_instructions = new ArrayList<>();
+
+    private ArrayList<Reservation> reservationArrayList = new ArrayList<>();
 
     // L'identifiant de notre requête
     public final static int CHOOSE_BUTTON_REQUEST = 0;
@@ -182,13 +189,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             listAddress.add(element);
         }
 
-        ListAdapter adapter = new SimpleAdapter(this,
+        /*ListAdapter adapter = new SimpleAdapter(this,
                 listAddress,
                 android.R.layout.simple_list_item_2,
                 new String[]{"address", "clientName"},
                 new int[]{android.R.id.text1, android.R.id.text2});
 
-        mListView = findViewById(R.id.listView);
+        ListView mListView = findViewById(R.id.listView);
         mListView.setAdapter(adapter);
         mListView.setOnItemClickListener((parent, view, position, id) -> {
             String addressClicked = listAddress.get(position).get("address");
@@ -202,7 +209,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("Address Clicked",userLatLng.toString());
 
             postDirectionRequestFromLatLong(userLatLng);
+        });*/
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        Date startdate = null;
+        Date enddate = null;
+        try {
+            startdate = format.parse("2019-03-20T12:30Z");
+            enddate = format.parse("2019-03-22T12:30Z");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        reservationArrayList.add(new Reservation("119 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.4));
+        reservationArrayList.add(new Reservation("101 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.5));
+        reservationArrayList.add(new Reservation("89 rue des maraichers, Villebon-sur-Yvette, France", startdate, enddate, "bla", 2.6));
+        reservationArrayList.add(new Reservation("Paris, Paris, France", startdate, enddate, "bla", 2.7));
+
+        // set up the RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.listView2);
+        LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(horizontalLayoutManager);
+
+
+        MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, reservationArrayList);
+        adapter2.setClickListener((view, position) -> {
+            Reservation reservationClicked = adapter2.getItem(position);
+            //view.findViewById(R.id.parent).setBackgroundColor(getColor(R.color.myOrange));
+            view.findViewById(R.id.iv_navigate).setOnClickListener(v -> {
+                //recyclerView.setVisibility(View.GONE);
+                postDirectionRequestFromLatLong(getLatLongFromAddressString(getApplicationContext(), reservationClicked.getCompleteAddress()));
+            });
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),reservationClicked.getCompleteAddress())));
+            Toast.makeText(this, reservationClicked.getAddress(), Toast.LENGTH_SHORT).show();
         });
+        recyclerView.setAdapter(adapter2);
     }
 
     public void postDirectionRequestFromLatLong(LatLng latLng){
