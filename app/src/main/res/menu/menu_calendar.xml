@@ -18,11 +18,6 @@
         android:id="@+id/action_settings1"
         android:title="@string/day_view"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_settings2"
-        android:title="3 Days view"
-        app:showAsAction="never" />
     <item
         android:id="@+id/action_settings3"
         android:title="Month view"

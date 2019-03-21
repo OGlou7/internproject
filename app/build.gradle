@@ -56,4 +56,5 @@ dependencies {
     implementation 'nl.psdcompany:duo-navigation-drawer:3.0.0'
     implementation 'com.applandeo:material-calendar-view:1.5.1'
     implementation 'com.github.alamkanak:android-week-view:1.2.6'
+    implementation 'me.jlurena:revolvingweekview:1.0.0'
 }

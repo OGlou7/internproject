@@ -24,7 +24,7 @@
             android:text="Switch Mode"/>
     </android.support.v7.widget.Toolbar>
 
-    <com.alamkanak.weekview.WeekView
+    <fr.testappli.googlemapapi.WeekView
         android:id="@+id/weekView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -35,7 +35,7 @@
         app:headerColumnTextColor="#8f000000"
         app:headerRowPadding="12dp"
         app:columnGap="8dp"
-        app:noOfVisibleDays="3"
+        app:noOfVisibleDays="1"
         app:headerRowBackgroundColor="#ffefefef"
         app:dayBackgroundColor="#05000000"
         app:todayBackgroundColor="#1848adff"

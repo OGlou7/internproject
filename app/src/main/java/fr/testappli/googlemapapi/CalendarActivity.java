@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.drawable.DrawableWrapper;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -69,11 +70,9 @@ public class CalendarActivity extends AppCompatActivity {
     private int yearPicked;
     private Date startDate;
     private Date endDate;
-    private ArrayList<String> listReservationTime = new ArrayList<>();
 
     public final static int CHOOSE_BUTTON_REQUEST = 0;
     public final static int TIME_PICKER_INTERVAL = 30;
-    public final static Bundle NEW_EVENTS = new Bundle();
 
     private ArrayList<Reservation> reservationArrayList = new ArrayList<>();
 
@@ -83,8 +82,8 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar_activity);
         calendarView = findViewById(R.id.calendarView);
+        mRelativeLayout = findViewById(R.id.mainLayout);
 
-        currentCalendar = Calendar.getInstance();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -93,8 +92,7 @@ public class CalendarActivity extends AppCompatActivity {
         ImageView imageReturn = findViewById(R.id.back);
         imageReturn.setOnClickListener(v -> finish());
 
-        mRelativeLayout = findViewById(R.id.mainLayout);
-
+        currentCalendar = Calendar.getInstance();
         /*events.add(new EventDay(currentCalendar, R.drawable.ic_action_refresh));
         calendarView.setEvents(events);
         List<Calendar> selectedDates = calendarView.getSelectedDates();
@@ -103,19 +101,19 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView.setHeaderLabelColor(R.color.colorBlack);
         //calendarView.setPreviousButtonImage;
         calendarView.setOnDayClickListener(eventDay -> {
-            Calendar clickedDayCalendar = eventDay.getCalendar();
-            //events.add(new EventDay(clickedDayCalendar, R.drawable.ic_action_refresh));
-            //events.add(new EventDay(clickedDayCalendar, CalendarUtils.getDrawableText(getApplicationContext(), "Test", null, R.color.quantum_orange600, 6)));
-
-            events.add(new EventDay(clickedDayCalendar, R.drawable.single_icon));
+//            Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
+//            dayActivity.putExtra("nbOfVisibleDays", 1);
+//            dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
+//            startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
+//            finish();
+//            Calendar clickedDayCalendar = eventDay.getCalendar();
+            events.add(new EventDay(eventDay.getCalendar(), R.drawable.reservation));
             calendarView.setEvents(events);
         });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e("TESTTEST", String.valueOf(requestCode));
-        Log.e("TESTTEST", String.valueOf(resultCode));
         Bundle bundle = data.getExtras();
         events = (ArrayList<EventDay>) bundle.getSerializable("events");
         calendarView.setEvents(events);
@@ -146,12 +144,6 @@ public class CalendarActivity extends AppCompatActivity {
                 Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
                 dayActivity.putExtra("nbOfVisibleDays", 1);
                 startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
-                finish();
-                return true;
-            case R.id.action_settings2:
-                Intent weekActivity = new Intent(getApplicationContext(), WeekActivity.class);
-                weekActivity.putExtra("nbOfVisibleDays", 3);
-                startActivityForResult(weekActivity, CHOOSE_BUTTON_REQUEST);
                 finish();
                 return true;
             case R.id.action_settings3:
@@ -190,11 +182,6 @@ public class CalendarActivity extends AppCompatActivity {
     public static Calendar getDatePart(Date date){
         Calendar cal = Calendar.getInstance();       // get calendar instance
         cal.setTime(date);
-        cal.set(Calendar.HOUR_OF_DAY, 0);            // set hour to midnight
-        cal.set(Calendar.MINUTE, 0);                 // set minute in hour
-        cal.set(Calendar.SECOND, 0);                 // set second in minute
-        cal.set(Calendar.MILLISECOND, 0);            // set millisecond in second
-
         return cal;                                   // return the date part
     }
 
