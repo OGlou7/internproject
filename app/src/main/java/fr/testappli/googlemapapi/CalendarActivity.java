@@ -50,7 +50,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class CalendarActivity extends AppCompatActivity {
@@ -61,6 +60,7 @@ public class CalendarActivity extends AppCompatActivity {
     private com.applandeo.materialcalendarview.CalendarView calendarView = null;
     private ArrayList<EventDay> events = new ArrayList<>();
     private Calendar currentCalendar = null;
+    private ArrayList<Calendar> nonAvailableDaysList = new ArrayList<>();
 
     private PopupWindow mPopupWindow;
     private LinearLayout mRelativeLayout;
@@ -101,11 +101,11 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView.setHeaderLabelColor(R.color.colorBlack);
         //calendarView.setPreviousButtonImage;
         calendarView.setOnDayClickListener(eventDay -> {
-//            Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
-//            dayActivity.putExtra("nbOfVisibleDays", 1);
-//            dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
-//            startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
-//            finish();
+            Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
+            dayActivity.putExtra("nbOfVisibleDays", 1);
+            dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
+            startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
+            //finish();
 //            Calendar clickedDayCalendar = eventDay.getCalendar();
             events.add(new EventDay(eventDay.getCalendar(), R.drawable.reservation));
             calendarView.setEvents(events);
@@ -114,9 +114,19 @@ public class CalendarActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bundle bundle = data.getExtras();
-        events = (ArrayList<EventDay>) bundle.getSerializable("events");
-        calendarView.setEvents(events);
+//        Bundle bundle = data.getExtras();
+//        //events = (ArrayList<EventDay>) bundle.getSerializable("events");
+//        ArrayList<WeekViewEvent> newWeekNewEvent = (ArrayList<WeekViewEvent>) bundle.getSerializable("events");
+//        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
+//            if(nonAvailableDaysList.size() == 0)
+//                nonAvailableDaysList.add(resetCalendar(weekViewEvent.getStartTime()));
+//            else if(!nonAvailableDaysList.contains(resetCalendar(weekViewEvent.getStartTime())))
+//                nonAvailableDaysList.add(resetCalendar(weekViewEvent.getStartTime()));
+//        }
+//        for(Calendar test : nonAvailableDaysList)
+//            events.add(new EventDay(test, R.drawable.reservation));
+//
+//        calendarView.setEvents(events);
     }
 
     @Override
@@ -183,6 +193,17 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();       // get calendar instance
         cal.setTime(date);
         return cal;                                   // return the date part
+    }
+
+    public static Calendar resetCalendar(Calendar calendar){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(calendar.getTime());
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return cal;
     }
 
 

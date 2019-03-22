@@ -1,5 +1,4 @@
 package fr.testappli.googlemapapi;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -23,7 +22,6 @@ import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
@@ -225,10 +223,10 @@ public class WeekView extends View {
             switch (mCurrentFlingDirection) {
                 case LEFT:
                 case RIGHT:
-                    mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, Integer.MIN_VALUE, Integer.MAX_VALUE, (int) -(mHourHeight * 48 + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight / 2 - getHeight()), 0);
+                    mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, (int) (velocityX * mXScrollingSpeed), 0, Integer.MIN_VALUE, Integer.MAX_VALUE, (int) -(mHourHeight * 24 + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight / 2 - getHeight()), 0);
                     break;
                 case VERTICAL:
-                    mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, 0, (int) velocityY, Integer.MIN_VALUE, Integer.MAX_VALUE, (int) -(mHourHeight * 48 + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2 - getHeight()), 0);
+                    mScroller.fling((int) mCurrentOrigin.x, (int) mCurrentOrigin.y, 0, (int) velocityY, Integer.MIN_VALUE, Integer.MAX_VALUE, (int) -(mHourHeight * 24 + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2 - getHeight()), 0);
                     break;
             }
 
@@ -469,7 +467,7 @@ public class WeekView extends View {
      */
     private void initTextTimeWidth() {
         mTimeTextWidth = 0;
-        for (int i = 0; i < 48; i++) {
+        for (int i = 0; i < 24; i++) {
             // Measure time string and get max width.
             String time = getDateTimeInterpreter().interpretTime(i);
             if (time == null)
@@ -499,7 +497,7 @@ public class WeekView extends View {
         // Clip to paint in left column only.
         canvas.clipRect(0, mHeaderTextHeight + mHeaderRowPadding * 2, mHeaderColumnWidth, getHeight(), Region.Op.REPLACE);
 
-        for (int i = 0; i < 48; i++) {
+        for (int i = 0; i < 24; i++) {
             float top = mHeaderTextHeight + mHeaderRowPadding * 2 + mCurrentOrigin.y + mHourHeight * i + mHeaderMarginBottom;
 
             // Draw the text if its y position is not outside of the visible area. The pivot point of the text is the point at the bottom-right corner.
@@ -556,8 +554,8 @@ public class WeekView extends View {
         }
 
         // If the new mCurrentOrigin.y is invalid, make it valid.
-        if (mCurrentOrigin.y < getHeight() - mHourHeight * 48 - mHeaderTextHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight/2)
-            mCurrentOrigin.y = getHeight() - mHourHeight * 48 - mHeaderTextHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight/2;
+        if (mCurrentOrigin.y < getHeight() - mHourHeight * 24 - mHeaderTextHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight/2)
+            mCurrentOrigin.y = getHeight() - mHourHeight * 24 - mHeaderTextHeight - mHeaderRowPadding * 2 - mHeaderMarginBottom - mTimeTextHeight/2;
 
         // Don't put an "else if" because it will trigger a glitch when completely zoomed out and
         // scrolling vertically.
@@ -646,8 +644,8 @@ public class WeekView extends View {
             }
 
             // Prepare the separator lines for hours.
-            int i = 0;
-            for (int hourNumber = 0; hourNumber < 48; hourNumber++) {
+            /*int i = 0;
+            for (int hourNumber = 0; hourNumber < 24; hourNumber++) {
                 float top = mHeaderTextHeight + mHeaderRowPadding * 2 + mCurrentOrigin.y + mHourHeight * hourNumber + mTimeTextHeight/2 + mHeaderMarginBottom;
                 if (top > mHeaderTextHeight + mHeaderRowPadding * 2 + mTimeTextHeight/2 + mHeaderMarginBottom - mHourSeparatorHeight && top < getHeight() && startPixel + mWidthPerDay - start > 0){
                     hourLines[i * 4] = start;
@@ -656,7 +654,22 @@ public class WeekView extends View {
                     hourLines[i * 4 + 3] = top;
                     i++;
                 }
+            }*/
+
+            /*For half hour coding start*/
+            int i = 0;
+            for (int hourNumber = 0; hourNumber < 24; hourNumber++) {
+                float top = mHeaderTextHeight + mHeaderRowPadding * 2 + mCurrentOrigin.y + mHourHeight * hourNumber + mTimeTextHeight / 2 + mHeaderMarginBottom;
+                if (top > mHeaderTextHeight + mHeaderRowPadding * 2 + mTimeTextHeight/2 + mHeaderMarginBottom - mHourSeparatorHeight && top < getHeight() && startPixel + mWidthPerDay - start > 0) {
+                    for (int j = 0; j < 2; ++j, ++i) {
+                        hourLines[i * 4] = start;
+                        hourLines[i * 4 + 1] = top + mHourHeight * j / 2;
+                        hourLines[i * 4 + 2] = startPixel + mWidthPerDay;
+                        hourLines[i * 4 + 3] = top + mHourHeight * j / 2;
+                    }
+                }
             }
+            /*For Half hour coding ends*/
 
             // Draw the lines for hours.
             canvas.drawLines(hourLines, mHourSeparatorPaint);
@@ -743,11 +756,11 @@ public class WeekView extends View {
                 if (isSameDay(mEventRects.get(i).event.getStartTime(), date)) {
 
                     // Calculate top.
-                    float top = mHourHeight * 48 * mEventRects.get(i).top / 1440 + mCurrentOrigin.y + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2 + mEventMarginVertical;
+                    float top = mHourHeight * 24 * mEventRects.get(i).top / 1440 + mCurrentOrigin.y + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2 + mEventMarginVertical;
 
                     // Calculate bottom.
                     float bottom = mEventRects.get(i).bottom;
-                    bottom = mHourHeight * 48 * bottom / 1440 + mCurrentOrigin.y + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2 - mEventMarginVertical;
+                    bottom = mHourHeight * 24 * bottom / 1440 + mCurrentOrigin.y + mHeaderTextHeight + mHeaderRowPadding * 2 + mHeaderMarginBottom + mTimeTextHeight/2 - mEventMarginVertical;
 
                     // Calculate left and right.
                     float left = startFromPixel + mEventRects.get(i).left * mWidthPerDay;
@@ -916,9 +929,9 @@ public class WeekView extends View {
                 if (currentPeriodEvents == null)
                     currentPeriodEvents = mWeekViewLoader.onLoad(periodToFetch);
                 if (previousPeriodEvents == null)
-                    previousPeriodEvents = mWeekViewLoader.onLoad(periodToFetch - 1);
+                    previousPeriodEvents = mWeekViewLoader.onLoad(periodToFetch-1);
                 if (nextPeriodEvents == null)
-                    nextPeriodEvents = mWeekViewLoader.onLoad(periodToFetch + 1);
+                    nextPeriodEvents = mWeekViewLoader.onLoad(periodToFetch+1);
 
 
                 // Clear events.

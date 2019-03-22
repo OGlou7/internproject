@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,21 +11,11 @@
         android:background="@color/myBlue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ImageView
-            android:id="@+id/back"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:tint="@color/toolbar_icon_color"
-            android:src="@drawable/ic_round_swap_horiz_24px" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/toolbar_icon_color"
-            android:text="Switch Mode"/>
     </android.support.v7.widget.Toolbar>
 
     <fr.testappli.googlemapapi.WeekView
         android:id="@+id/weekView"
+        android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:eventTextColor="@android:color/white"
@@ -36,9 +26,10 @@
         app:headerRowPadding="12dp"
         app:columnGap="8dp"
         app:noOfVisibleDays="1"
+        app:firstDayOfWeek="monday"
         app:headerRowBackgroundColor="#ffefefef"
         app:dayBackgroundColor="#05000000"
         app:todayBackgroundColor="#1848adff"
         app:headerColumnBackground="#ffffffff"/>
 
-</LinearLayout>
+</RelativeLayout>
