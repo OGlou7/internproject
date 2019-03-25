@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.icu.util.Calendar;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -25,9 +24,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,6 +68,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import fr.testappli.googlemapapi.base.LoginActivity;
+import fr.testappli.googlemapapi.auth.ProfileActivity;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -325,8 +324,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivityForResult(logIn, CHOOSE_BUTTON_REQUEST);
                 return true;
             case R.id.action_settings2:
-                Intent register = new Intent(MainActivity.this, RegisterActivity.class);
-                startActivityForResult(register, CHOOSE_BUTTON_REQUEST);
+                Intent profile = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivityForResult(profile, CHOOSE_BUTTON_REQUEST);
                 return true;
             case R.id.action_settings3:
                 finish();

@@ -1,7 +1,10 @@
-package fr.testappli.googlemapapi;
+package fr.testappli.googlemapapi.week;
 
 import java.util.Calendar;
 import java.util.List;
+
+import fr.testappli.googlemapapi.week.WeekViewEvent;
+import fr.testappli.googlemapapi.week.WeekViewLoader;
 
 public class MonthLoader implements WeekViewLoader {
 

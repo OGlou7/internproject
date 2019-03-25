@@ -45,4 +45,29 @@
     <string name="search">Search</string>
     <string name="reservation_title">Reservation</string>
     <string name="button_week_save">Save modifications</string>
+
+
+    <!-- MAIN ACTIVITY -->
+    <string name="error_not_connected">Vous devez vous connecter !</string>
+    <string name="error_authentication_canceled">Authentification annulée&#8230;</string>
+    <string name="error_no_internet">Aucune connexion internet !</string>
+    <string name="error_unknown_error">Une erreur inconnue s\'est produite&#8230;</string>
+    <string name="connection_succeed">Authentification réussie !</string>
+    <string name="button_login_text_logged">Afficher le profil</string>
+    <string name="button_login_text_not_logged">Connexion</string>
+
+    <!-- LOGIN ACTIVITY -->
+    <string name="toolbar_title_login_activity">Votre Profil</string>
+    <string name="text_input_username">Nom d\'utilisateur</string>
+    <string name="text_view_email">Adresse email :</string>
+    <string name="button_update_account">Mettre à jour le nom d\'utilisateur</string>
+    <string name="button_delete_account">Supprimer mon compte</string>
+    <string name="button_sign_out_account">Déconnexion</string>
+    <string name="info_no_email_found">Auncune adresse email</string>
+    <string name="info_no_username_found">Aucun nom d\'utilisateur</string>
+    <string name="popup_message_confirmation_delete_account">Es-tu sûr(e) de vouloir supprimer ton compte ?</string>
+    <string name="popup_message_choice_yes">Oui !</string>
+    <string name="popup_message_choice_no">Non</string>
+    <string name="check_box_is_mentor">Etes-vous un mentor ?</string>
+    <string name="profileactivity_title">Profile</string>
 </resources>

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "30327219340",
+    "firebase_url": "https://mobilego-29761.firebaseio.com",
+    "project_id": "mobilego-29761",
+    "storage_bucket": "mobilego-29761.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30327219340:android:dbd6224534729b14",
+        "android_client_info": {
+          "package_name": "fr.testappli.googlemapapi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "30327219340-etdlb3s99sablge5mbd227g2oja7rflp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.testappli.googlemapapi",
+            "certificate_hash": "627e29d8d1c9c10e062da185499fd62221714886"
+          }
+        },
+        {
+          "client_id": "30327219340-5btp699kl2u3rfkuakcj6m4m6nnjc74t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6RBwEn28Felg-FdfQ3pwRjZJt_LDJka8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "30327219340-5btp699kl2u3rfkuakcj6m4m6nnjc74t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,6 +4,7 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="colorError">#FF5252</color>
 
     <!-- Widget color -->
     <color name="colorWhite">#FFFFFF</color>
@@ -16,4 +17,6 @@
     <color name="myLightGrey">#ffefefef</color>
     <color name="myGreen">#008577</color>
     <color name="myRed">#ff5a5f</color>
+    <color name="mySolorSandLight">#ECDAAF</color>
+    <color name="myColorSand">#EBCB94</color>
 </resources>

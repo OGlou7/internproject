@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 
 //import com.alamkanak.weekview.MonthLoader;
 //import com.alamkanak.weekview.WeekView;
@@ -18,11 +16,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import fr.testappli.googlemapapi.week.WeekView;
+import fr.testappli.googlemapapi.week.WeekViewEvent;
 
 public class WeekActivity extends AppCompatActivity {
 

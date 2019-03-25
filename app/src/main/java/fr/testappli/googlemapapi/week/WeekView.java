@@ -1,4 +1,4 @@
-package fr.testappli.googlemapapi;
+package fr.testappli.googlemapapi.week;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -39,6 +39,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+
+import fr.testappli.googlemapapi.DateTimeInterpreter;
+import fr.testappli.googlemapapi.R;
 
 /**
  * Created by Raquib-ul-Alam Kanak on 7/21/2014.
@@ -1184,7 +1187,8 @@ public class WeekView extends View {
         return mEventClickListener;
     }
 
-    public @Nullable MonthLoader.MonthChangeListener getMonthChangeListener() {
+    public @Nullable
+    MonthLoader.MonthChangeListener getMonthChangeListener() {
         if (mWeekViewLoader instanceof MonthLoader)
             return ((MonthLoader) mWeekViewLoader).getOnMonthChangeListener();
         return null;

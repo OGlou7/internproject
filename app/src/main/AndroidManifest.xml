@@ -47,15 +47,15 @@
         </activity>
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".base.LoginActivity"
             android:label="@string/login_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".RegisterActivity"
-            android:label="@string/register_title"
+            android:name=".auth.ProfileActivity"
+            android:label="@string/profileactivity_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
