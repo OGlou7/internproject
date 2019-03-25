@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class CalendarActivity extends AppCompatActivity {
 
@@ -60,7 +61,8 @@ public class CalendarActivity extends AppCompatActivity {
     private com.applandeo.materialcalendarview.CalendarView calendarView = null;
     private ArrayList<EventDay> events = new ArrayList<>();
     private Calendar currentCalendar = null;
-    private ArrayList<Calendar> nonAvailableDaysList = new ArrayList<>();
+    private ArrayList<WeekViewEvent> nonAvailableDaysList = new ArrayList<>();
+    private ArrayList<Calendar> nonAvailableCalendarList = new ArrayList<>();
 
     private PopupWindow mPopupWindow;
     private LinearLayout mRelativeLayout;
@@ -102,6 +104,9 @@ public class CalendarActivity extends AppCompatActivity {
         //calendarView.setPreviousButtonImage;
         calendarView.setOnDayClickListener(eventDay -> {
             Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("events", nonAvailableDaysList);
+            dayActivity.putExtra("events", bundle);
             dayActivity.putExtra("nbOfVisibleDays", 1);
             dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
             startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
@@ -114,19 +119,20 @@ public class CalendarActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        Bundle bundle = data.getExtras();
-//        //events = (ArrayList<EventDay>) bundle.getSerializable("events");
-//        ArrayList<WeekViewEvent> newWeekNewEvent = (ArrayList<WeekViewEvent>) bundle.getSerializable("events");
-//        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
-//            if(nonAvailableDaysList.size() == 0)
-//                nonAvailableDaysList.add(resetCalendar(weekViewEvent.getStartTime()));
-//            else if(!nonAvailableDaysList.contains(resetCalendar(weekViewEvent.getStartTime())))
-//                nonAvailableDaysList.add(resetCalendar(weekViewEvent.getStartTime()));
-//        }
-//        for(Calendar test : nonAvailableDaysList)
-//            events.add(new EventDay(test, R.drawable.reservation));
-//
-//        calendarView.setEvents(events);
+        Bundle bundle = data.getExtras().getBundle("events");
+        //events = (ArrayList<EventDay>) bundle.getSerializable("events");
+        ArrayList<WeekViewEvent> newWeekNewEvent = (ArrayList<WeekViewEvent>) Objects.requireNonNull(bundle.getSerializable("events"));
+        nonAvailableDaysList.addAll(newWeekNewEvent);
+        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
+            if(nonAvailableCalendarList.size() == 0)
+                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
+            else if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime())))
+                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
+        }
+        for(Calendar test : nonAvailableCalendarList)
+            events.add(new EventDay(test, R.drawable.reservation));
+
+        calendarView.setEvents(events);
     }
 
     @Override

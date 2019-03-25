@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class WeekActivity extends AppCompatActivity {
 
     private WeekView mWeekView = null;
     private ArrayList<WeekViewEvent> mNewEvents;
+    private ArrayList<WeekViewEvent> mOldEvents;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,8 @@ public class WeekActivity extends AppCompatActivity {
         setContentView(R.layout.week_activity);
 
         Intent intent = getIntent();
+        Bundle bundle = intent.getExtras().getBundle("events");
+        mOldEvents = (ArrayList<WeekViewEvent>) Objects.requireNonNull(bundle.getSerializable("events"));
         int nbOfVisibleDays = intent.getIntExtra("nbOfVisibleDays", 1);
         long dayTimeClicked = intent.getLongExtra("dayClicked", Calendar.getInstance().getTimeInMillis());
 
@@ -58,9 +62,11 @@ public class WeekActivity extends AppCompatActivity {
             ArrayList<WeekViewEvent> nonAvailableDaysList = new ArrayList<>();
             nonAvailableDaysList.addAll(mNewEvents);
 
+            Intent data = new Intent();
             Bundle testt = new Bundle();
             testt.putSerializable("events", nonAvailableDaysList);
-            intent.putExtra("events", testt);
+            data.putExtra("events", testt);
+            setResult(0,data);
             finish();
         });
 
@@ -108,7 +114,9 @@ public class WeekActivity extends AppCompatActivity {
             // Populate the week view with the events that was added by tapping on empty view.
             List<WeekViewEvent> events = getEvents(newYear, newMonth);
             ArrayList<WeekViewEvent> newEvents = getNewEvents(newYear, newMonth);
+            ArrayList<WeekViewEvent> oldEvents = getOldEvents(newYear, newMonth);
             events.addAll(newEvents);
+            events.addAll(oldEvents);
             return events;
         });
 
@@ -184,6 +192,36 @@ public class WeekActivity extends AppCompatActivity {
         // time frame.
         ArrayList<WeekViewEvent> events = new ArrayList<>();
         for (WeekViewEvent event : mNewEvents) {
+            if (event.getEndTime().getTimeInMillis() > startOfMonth.getTimeInMillis() &&
+                    event.getStartTime().getTimeInMillis() < endOfMonth.getTimeInMillis()) {
+                events.add(event);
+            }
+        }
+        return events;
+    }
+
+    private ArrayList<WeekViewEvent> getOldEvents(int year, int month) {
+
+        // Get the starting point and ending point of the given month. We need this to find the
+        // events of the given month.
+        Calendar startOfMonth = Calendar.getInstance();
+        startOfMonth.set(Calendar.YEAR, year);
+        startOfMonth.set(Calendar.MONTH, month - 1);
+        startOfMonth.set(Calendar.DAY_OF_MONTH, 1);
+        startOfMonth.set(Calendar.HOUR_OF_DAY, 0);
+        startOfMonth.set(Calendar.MINUTE, 0);
+        startOfMonth.set(Calendar.SECOND, 0);
+        startOfMonth.set(Calendar.MILLISECOND, 0);
+        Calendar endOfMonth = (Calendar) startOfMonth.clone();
+        endOfMonth.set(Calendar.DAY_OF_MONTH, endOfMonth.getMaximum(Calendar.DAY_OF_MONTH));
+        endOfMonth.set(Calendar.HOUR_OF_DAY, 23);
+        endOfMonth.set(Calendar.MINUTE, 59);
+        endOfMonth.set(Calendar.SECOND, 59);
+
+        // Find the events that were added by tapping on empty view and that occurs in the given
+        // time frame.
+        ArrayList<WeekViewEvent> events = new ArrayList<>();
+        for (WeekViewEvent event : mOldEvents) {
             if (event.getEndTime().getTimeInMillis() > startOfMonth.getTimeInMillis() &&
                     event.getStartTime().getTimeInMillis() < endOfMonth.getTimeInMillis()) {
                 events.add(event);

@@ -6,7 +6,7 @@ import java.util.Calendar;
  * Created by Raquib-ul-Alam Kanak on 7/21/2014.
  * Website: http://april-shower.com
  */
-public class WeekViewEvent {
+public class WeekViewEvent implements java.io.Serializable{
     private long mId;
     private Calendar mStartTime;
     private Calendar mEndTime;
