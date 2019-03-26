@@ -2,8 +2,10 @@ package fr.testappli.googlemapapi;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
@@ -69,11 +71,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-import fr.testappli.googlemapapi.base.LoginActivity;
 import fr.testappli.googlemapapi.auth.ProfileActivity;
+import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
 
-
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+//TODO: URGENT & IMPORTANT remettre 'public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {'
+public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5445;
 
@@ -83,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Location currentLocation;
     private Address currentAddress;
     private boolean firstTimeFlag = true;
-    private ArrayList<HashMap<String, String>> listAddress = new ArrayList<>();
     private AutocompleteSupportFragment autocompleteFragment;
 
     private ImageView img_maneuver;
@@ -96,17 +98,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private ArrayList<Reservation> reservationArrayList = new ArrayList<>();
 
-    // L'identifiant de notre requête
-    public final static int CHOOSE_BUTTON_REQUEST = 0;
-    // L'identifiant de la chaîne de caractères qui contient le résultat de l'intent
-    public final static String BUTTONS = "sdz.chapitreTrois.intent.example.Boutons";
+    private  BroadcastReceiver broadcastReceiver;
 
+    // L'identifiant de notre requête
+    public final static int CALENDARACTIVITY_REQUEST = 1;
+    public final static int PROFILEACTIVITY_REQUEST = 2;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        Log.e("TESTTEST","MainActivity create");
         // Map Fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
@@ -119,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ImageView imageReturn = findViewById(R.id.switch_mode);
         imageReturn.setOnClickListener(v -> {
             Intent calendarActivity = new Intent(MainActivity.this, CalendarActivity.class);
-            startActivityForResult(calendarActivity, CHOOSE_BUTTON_REQUEST);
+            startActivityForResult(calendarActivity, CALENDARACTIVITY_REQUEST);
         });
 
         // Handle Toolbar
@@ -175,41 +178,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        // Handle list view with parking address
-        String[] addressToDisplay = getResources().getStringArray(R.array.Address_client);
+        // Handle receiver to finish activity
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if(action.equals("finish")){
+                    finish();
+                }
+            }
+        };
+        registerReceiver(broadcastReceiver, new IntentFilter("finish"));
 
-        for (String anAddressToDisplay : addressToDisplay) {
-            String addressClientToDisplay[] = anAddressToDisplay.split(";");
-
-            HashMap<String, String> element;
-            element = new HashMap<>();
-            element.put("address", addressClientToDisplay[0]);
-            element.put("clientName", addressClientToDisplay[1]);
-            listAddress.add(element);
-        }
-
-        /*ListAdapter adapter = new SimpleAdapter(this,
-                listAddress,
-                android.R.layout.simple_list_item_2,
-                new String[]{"address", "clientName"},
-                new int[]{android.R.id.text1, android.R.id.text2});
-
-        ListView mListView = findViewById(R.id.listView);
-        mListView.setAdapter(adapter);
-        mListView.setOnItemClickListener((parent, view, position, id) -> {
-            String addressClicked = listAddress.get(position).get("address");
-            //String clientNameClicked = listAddress.get(position).get("clientName");
-
-            Log.d("Address Clicked",addressClicked);
-
-            Toast.makeText(getApplicationContext(), addressClicked, Toast.LENGTH_SHORT).show();
-            LatLng userLatLng = getLatLongFromAddressString(getApplicationContext(), addressClicked);
-            assert userLatLng != null;
-            Log.d("Address Clicked",userLatLng.toString());
-
-            postDirectionRequestFromLatLong(userLatLng);
-        });*/
-
+        // TODO: get garage  from fatebase
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
         Date startdate = null;
         Date enddate = null;
@@ -229,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(horizontalLayoutManager);
 
-
+        // set up horizontal list
         MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, reservationArrayList);
         adapter2.setClickListener((view, position) -> {
             Reservation reservationClicked = adapter2.getItem(position);
@@ -244,6 +225,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
         recyclerView.setAdapter(adapter2);
     }
+
+    @Override
+    public int getFragmentLayout() { return R.layout.activity_profile; }
 
     public void postDirectionRequestFromLatLong(LatLng latLng){
         String url = "https://maps.googleapis.com/maps/api/directions/json?&origin=" +
@@ -319,19 +303,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 else
                     Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.VISIBLE);
                 return true;
-            case R.id.action_settings1:
-                Intent logIn = new Intent(MainActivity.this, LoginActivity.class);
-                startActivityForResult(logIn, CHOOSE_BUTTON_REQUEST);
+            case R.id.action_chat:
+                if (this.isCurrentUserLogged()){
+                    this.startVendorChatActivity();
+                } else {
+                    Toast.makeText(this, getString(R.string.error_not_connected), Toast.LENGTH_SHORT).show();
+                }
                 return true;
-            case R.id.action_settings2:
+            case R.id.action_profile:
                 Intent profile = new Intent(MainActivity.this, ProfileActivity.class);
-                startActivityForResult(profile, CHOOSE_BUTTON_REQUEST);
+                startActivityForResult(profile, PROFILEACTIVITY_REQUEST);
                 return true;
-            case R.id.action_settings3:
+            case R.id.action_quit:
                 finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startVendorChatActivity(){
+        Intent intent = new Intent(this, VendorChatActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -648,7 +640,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
 
-
     private void showMarker(@NonNull Location currentLocation) {
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         if (currentLocationMarker == null)
@@ -665,6 +656,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @NonNull
     private CameraPosition getCameraPositionWithBearing(LatLng latLng) {
         return new CameraPosition.Builder().target(latLng).zoom(16).build();
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
     }
 
     @Override
@@ -686,6 +682,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
         fusedLocationProviderClient = null;
         googleMap = null;
     }

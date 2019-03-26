@@ -65,7 +65,7 @@ public class CalendarActivity extends AppCompatActivity {
     private Date startDate;
     private Date endDate;
 
-    public final static int CHOOSE_BUTTON_REQUEST = 0;
+    public final static int WEEKACTIVITY_REQUEST = 0;
     public final static int TIME_PICKER_INTERVAL = 30;
 
     private ArrayList<Reservation> reservationArrayList = new ArrayList<>();
@@ -101,7 +101,7 @@ public class CalendarActivity extends AppCompatActivity {
             dayActivity.putExtra("events", bundle);
             dayActivity.putExtra("nbOfVisibleDays", 1);
             dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
-            startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
+            startActivityForResult(dayActivity, WEEKACTIVITY_REQUEST);
             //finish();
 //            Calendar clickedDayCalendar = eventDay.getCalendar();
             events.add(new EventDay(eventDay.getCalendar(), R.drawable.reservation));
@@ -151,7 +151,7 @@ public class CalendarActivity extends AppCompatActivity {
             case R.id.action_settings1:
                 Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
                 dayActivity.putExtra("nbOfVisibleDays", 1);
-                startActivityForResult(dayActivity, CHOOSE_BUTTON_REQUEST);
+                startActivityForResult(dayActivity, WEEKACTIVITY_REQUEST);
                 finish();
                 return true;
             case R.id.action_settings3:

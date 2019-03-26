@@ -1,9 +1,11 @@
 package fr.testappli.googlemapapi.auth;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -19,12 +21,16 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
+import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.base.LoginActivity;
 import fr.testappli.googlemapapi.models.User;
+import fr.testappli.googlemapapi.week.WeekViewEvent;
 
 public class ProfileActivity extends BaseActivity {
 
@@ -32,7 +38,7 @@ public class ProfileActivity extends BaseActivity {
     private TextView textViewEmail;
     private ImageView imageViewProfile;
     private ProgressBar progressBar;
-    private CheckBox checkBoxIsMentor;
+    private CheckBox checkBoxIsVendor;
 
     private static final int SIGN_OUT_TASK = 10;
     private static final int DELETE_USER_TASK = 20;
@@ -46,12 +52,12 @@ public class ProfileActivity extends BaseActivity {
         textInputEditTextUsername = findViewById(R.id.profile_activity_edit_text_username);
         textViewEmail = findViewById(R.id.profile_activity_text_view_email);
         progressBar = findViewById(R.id.profile_activity_progress_bar);
-        checkBoxIsMentor = findViewById(R.id.profile_activity_check_box_is_mentor);
+        checkBoxIsVendor = findViewById(R.id.profile_activity_check_box_is_vendor);
         Button update = findViewById(R.id.profile_activity_button_update);
         Button signOut = findViewById(R.id.profile_activity_button_sign_out);
         Button delete = findViewById(R.id.profile_activity_button_delete);
 
-        checkBoxIsMentor.setOnClickListener(v -> this.updateUserIsMentor());
+        checkBoxIsVendor.setOnClickListener(v -> this.updateUserIsVendor());
         update.setOnClickListener(v -> this.updateUsernameInFirebase());
         signOut.setOnClickListener(v -> this.signOutUserFromFirebase());
         delete.setOnClickListener(v -> new AlertDialog.Builder(this)
@@ -60,6 +66,15 @@ public class ProfileActivity extends BaseActivity {
                 .setNegativeButton(R.string.popup_message_choice_no, null)
                 .show());
 
+        //TOOLBAR
+        // setup the toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         this.updateUIWhenCreating();
     }
@@ -76,10 +91,9 @@ public class ProfileActivity extends BaseActivity {
         }
     }
 
-    // TODO : replace all "mentor" by "vendor" EVERYWHERE
-    private void updateUserIsMentor(){
+    private void updateUserIsVendor(){
         if (this.getCurrentUser() != null) {
-            UserHelper.updateIsVendor(this.getCurrentUser().getUid(), this.checkBoxIsMentor.isChecked()).addOnFailureListener(this.onFailureListener());
+            UserHelper.updateIsVendor(this.getCurrentUser().getUid(), this.checkBoxIsVendor.isChecked()).addOnFailureListener(this.onFailureListener());
         }
     }
 
@@ -88,6 +102,7 @@ public class ProfileActivity extends BaseActivity {
         AuthUI.getInstance()
                 .signOut(this)
                 .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(SIGN_OUT_TASK));
+        this.logOut();
     }
 
     private void deleteUserFromFirebase(){
@@ -97,6 +112,13 @@ public class ProfileActivity extends BaseActivity {
                     .delete(this)
                     .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(DELETE_USER_TASK));
         }
+        this.logOut();
+    }
+
+    private void logOut(){
+        Intent intent = new Intent("finish");
+        sendBroadcast(intent);
+        finish();
     }
 
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin){
@@ -131,19 +153,19 @@ public class ProfileActivity extends BaseActivity {
 
             //Get email & username from Firebase
             String email = TextUtils.isEmpty(this.getCurrentUser().getEmail()) ? getString(R.string.info_no_email_found) : this.getCurrentUser().getEmail();
-            String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName()) ? getString(R.string.info_no_username_found) : this.getCurrentUser().getDisplayName();
+            //String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName()) ? getString(R.string.info_no_username_found) : this.getCurrentUser().getDisplayName();
 
             //Update views with data
-            this.textInputEditTextUsername.setText(username);
+            //this.textInputEditTextUsername.setText(username);
             this.textViewEmail.setText(email);
 
-            // Get additional data from Firestore (isMentor & Username)
-            /*UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
+            // Get additional data from Firestore (isVendor & Username)
+            UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
                 User currentUser = documentSnapshot.toObject(User.class);
                 String username1 = TextUtils.isEmpty(Objects.requireNonNull(currentUser).getUsername()) ? getString(R.string.info_no_username_found) : currentUser.getUsername();
-                checkBoxIsMentor.setChecked(currentUser.getIsVendor());
+                checkBoxIsVendor.setChecked(currentUser.getIsVendor());
                 textInputEditTextUsername.setText(username1);
-            });*/
+            });
         }
     }
 

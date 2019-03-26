@@ -9,16 +9,15 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/action_settings1"
-        android:title="LogIn"
+        android:id="@+id/action_chat"
+        android:title="Chat"
         app:showAsAction="never" />
-
     <item
-        android:id="@+id/action_settings2"
+        android:id="@+id/action_profile"
         android:title="Profile"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_settings3"
+        android:id="@+id/action_quit"
         android:title="Quit"
         app:showAsAction="never" />
 </menu>
