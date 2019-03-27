@@ -79,7 +79,7 @@ public class ProfileActivity extends BaseActivity {
         this.updateUIWhenCreating();
     }
 
-    // 3 - Update User Username
+    // Update User Username
     private void updateUsernameInFirebase(){
         this.progressBar.setVisibility(View.VISIBLE);
         String username = Objects.requireNonNull(this.textInputEditTextUsername.getText()).toString();

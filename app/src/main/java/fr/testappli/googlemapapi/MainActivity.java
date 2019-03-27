@@ -73,6 +73,7 @@ import java.util.Objects;
 
 import fr.testappli.googlemapapi.auth.ProfileActivity;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.garage.GarageActivity;
 import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
 
 //TODO: URGENT & IMPORTANT remettre 'public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {'
@@ -109,7 +110,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        Log.e("TESTTEST","MainActivity create");
         // Map Fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
@@ -190,7 +190,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         };
         registerReceiver(broadcastReceiver, new IntentFilter("finish"));
 
-        // TODO: get garage  from fatebase
+        // TODO: get garage  from database
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
         Date startdate = null;
         Date enddate = null;
@@ -309,6 +309,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 } else {
                     Toast.makeText(this, getString(R.string.error_not_connected), Toast.LENGTH_SHORT).show();
                 }
+                return true;
+            case R.id.action_garage_list:
+                Intent garageIntent = new Intent(MainActivity.this, GarageActivity.class);
+                startActivityForResult(garageIntent, PROFILEACTIVITY_REQUEST);
                 return true;
             case R.id.action_profile:
                 Intent profile = new Intent(MainActivity.this, ProfileActivity.class);

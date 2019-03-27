@@ -5,6 +5,9 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+
+import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
 
 public class UserHelper {
@@ -38,6 +41,10 @@ public class UserHelper {
 
     public static Task<Void> updateIsVendor(String uid, Boolean isVendor) {
         return UserHelper.getUsersCollection().document(uid).update("isVendor", isVendor);
+    }
+
+    public static Task<Void> updateListGarage(String uid, ArrayList<Garage> listGarage) {
+        return UserHelper.getUsersCollection().document(uid).update("listGarage", listGarage);
     }
 
     // --- DELETE ---

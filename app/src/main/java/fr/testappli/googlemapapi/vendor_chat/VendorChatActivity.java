@@ -44,13 +44,13 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class VendorChatActivity extends BaseActivity implements VendorChatAdapter.Listener {
 
     // FOR DESIGN
-    @BindView(R.id.activity_mentor_chat_recycler_view) RecyclerView recyclerView;
-    @BindView(R.id.activity_mentor_chat_text_view_recycler_view_empty) TextView textViewRecyclerViewEmpty;
-    @BindView(R.id.activity_mentor_chat_message_edit_text) TextInputEditText editTextMessage;
-    @BindView(R.id.activity_mentor_chat_image_chosen_preview) ImageView imageViewPreview;
+    @BindView(R.id.activity_vendor_chat_recycler_view) RecyclerView recyclerView;
+    @BindView(R.id.activity_vendor_chat_text_view_recycler_view_empty) TextView textViewRecyclerViewEmpty;
+    @BindView(R.id.activity_vendor_chat_message_edit_text) TextInputEditText editTextMessage;
+    @BindView(R.id.activity_vendor_chat_image_chosen_preview) ImageView imageViewPreview;
 
     // FOR DATA
-    private VendorChatAdapter mentorChatAdapter;
+    private VendorChatAdapter vendorChatAdapter;
     @Nullable
     private User modelCurrentUser;
     private String currentChatName;
@@ -94,7 +94,7 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
     // --------------------
     // ACTIONS
     // --------------------
-    @OnClick(R.id.activity_mentor_chat_send_button)
+    @OnClick(R.id.activity_vendor_chat_send_button)
     // 2 - Depending if an image is set, we'll send different Message to Firestore
     public void onClickSendMessage() {
         if (!TextUtils.isEmpty(editTextMessage.getText()) && modelCurrentUser != null) {
@@ -112,7 +112,7 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
         }
     }
 
-    @OnClick({ R.id.activity_mentor_chat_android_chat_button, R.id.activity_mentor_chat_firebase_chat_button, R.id.activity_mentor_chat_bug_chat_button})
+    @OnClick({ R.id.activity_vendor_chat_android_chat_button, R.id.activity_vendor_chat_firebase_chat_button, R.id.activity_vendor_chat_bug_chat_button})
     public void onClickChatButtons(ImageButton imageButton) {
         // Re-Configure the RecyclerView depending chosen chat
         switch (Integer.valueOf(imageButton.getTag().toString())){
@@ -128,7 +128,7 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
         }
     }
 
-    @OnClick(R.id.activity_mentor_chat_add_file_button)
+    @OnClick(R.id.activity_vendor_chat_add_file_button)
     @AfterPermissionGranted(RC_IMAGE_PERMS)
     public void onClickAddFile() { this.chooseImageFromPhone(); }
 
@@ -186,15 +186,15 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
         //Track current chat name
         this.currentChatName = chatName;
         //Configure Adapter & RecyclerView
-        this.mentorChatAdapter = new VendorChatAdapter(generateOptionsForAdapter(MessageHelper.getAllMessageForChat(this.currentChatName)), Glide.with(this), this, this.getCurrentUser().getUid());
-        mentorChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+        this.vendorChatAdapter = new VendorChatAdapter(generateOptionsForAdapter(MessageHelper.getAllMessageForChat(this.currentChatName)), Glide.with(this), this, this.getCurrentUser().getUid());
+        vendorChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
-                recyclerView.smoothScrollToPosition(mentorChatAdapter.getItemCount()); // Scroll to bottom on new messages
+                recyclerView.smoothScrollToPosition(vendorChatAdapter.getItemCount()); // Scroll to bottom on new messages
             }
         });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(this.mentorChatAdapter);
+        recyclerView.setAdapter(this.vendorChatAdapter);
     }
 
     // Create options for RecyclerView from a Query
@@ -211,6 +211,6 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
 
     @Override
     public void onDataChanged() {
-        textViewRecyclerViewEmpty.setVisibility(this.mentorChatAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        textViewRecyclerViewEmpty.setVisibility(this.vendorChatAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
     }
 }
