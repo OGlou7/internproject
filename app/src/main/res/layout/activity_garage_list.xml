@@ -38,12 +38,20 @@
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 
-    <ListView
-        android:id="@+id/listView"
+    <!--<ListView-->
+        <!--android:id="@+id/listViewGarage"-->
+        <!--android:layout_below="@+id/toolbar"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:backgroundTint="@color/myLightGrey"-->
+        <!--/>-->
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/listViewGarage"
         android:layout_below="@+id/toolbar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/myLightGrey"
-        />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:backgroundTint="@color/myLightGrey" />
 
 </RelativeLayout>

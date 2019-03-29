@@ -38,7 +38,6 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import fr.testappli.googlemapapi.R;
-import fr.testappli.googlemapapi.Reservation;
 import fr.testappli.googlemapapi.models.Message;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
@@ -122,7 +121,6 @@ public class MessageViewHolder extends RecyclerView.ViewHolder {
 
                 glide.load(message.getUrlImage())
                         .into(imageView);
-                //imageView.setImageDrawable(imageViewSent.getDrawable());
                 imageView.setOnClickListener(v1 -> mPopupWindow.dismiss());
 
                 mPopupWindow.showAtLocation(rootView, Gravity.CENTER,0,0);

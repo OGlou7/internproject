@@ -166,7 +166,6 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
         StorageReference mImageRef = FirebaseStorage.getInstance().getReference(uuid);
         mImageRef.putFile(this.uriImageSelected)
                 .addOnSuccessListener(this, taskSnapshot -> {
-                    //Uri pathImageSavedInFirebase = taskSnapshot.getMetadata().getReference().getDownloadUrl().getResult();
                     Task<Uri> firebaseUri = taskSnapshot.getStorage().getDownloadUrl();
                     firebaseUri.addOnSuccessListener(uri -> MessageHelper.createMessageWithImageForChat(uri.toString(), message, currentChatName, modelCurrentUser).addOnFailureListener(onFailureListener()));
 

@@ -51,6 +51,8 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -76,7 +78,6 @@ import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.garage.GarageActivity;
 import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
 
-//TODO: URGENT & IMPORTANT remettre 'public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {'
 public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5445;
@@ -112,6 +113,12 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         setContentView(R.layout.activity_main2);
         // Map Fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
+
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        firestore.setFirestoreSettings(settings);
 
         // Maneuvers Display and controls
         tv_maneuver = findViewById(R.id.tv_manouver);
@@ -152,7 +159,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
                 String placeToSearch = place.getName();
-                Log.e("testtest8", placeToSearch);
 
                 Geocoder geocoder = new Geocoder(getBaseContext());
                 List<Address> addresses;
@@ -160,10 +166,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 try {
                     // Getting a maximum of 3 Addresses that matches the input text
                     addresses = geocoder.getFromLocationName(placeToSearch, 2);
-                    if (addresses != null && !addresses.isEmpty())
-                    {
+                    if (addresses != null && !addresses.isEmpty()){
                         search(addresses);
-                        Log.e("testtest8", addresses.toString());
                     }
                     Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
                 } catch (Exception e) {

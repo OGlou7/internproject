@@ -87,13 +87,8 @@ public class CalendarActivity extends AppCompatActivity {
         imageReturn.setOnClickListener(v -> finish());
 
         currentCalendar = Calendar.getInstance();
-        /*events.add(new EventDay(currentCalendar, R.drawable.ic_action_refresh));
-        calendarView.setEvents(events);
-        List<Calendar> selectedDates = calendarView.getSelectedDates();
-        Calendar selectedDate = calendarView.getFirstSelectedDate();*/
         calendarView.setHeaderColor(R.color.calendar_header_color);
         calendarView.setHeaderLabelColor(R.color.colorBlack);
-        //calendarView.setPreviousButtonImage;
         calendarView.setOnDayClickListener(eventDay -> {
             Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
             Bundle bundle = new Bundle();
@@ -102,8 +97,6 @@ public class CalendarActivity extends AppCompatActivity {
             dayActivity.putExtra("nbOfVisibleDays", 1);
             dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
             startActivityForResult(dayActivity, WEEKACTIVITY_REQUEST);
-            //finish();
-//            Calendar clickedDayCalendar = eventDay.getCalendar();
             events.add(new EventDay(eventDay.getCalendar(), R.drawable.reservation));
             calendarView.setEvents(events);
         });
@@ -112,7 +105,6 @@ public class CalendarActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Bundle bundle = data.getExtras().getBundle("events");
-        //events = (ArrayList<EventDay>) bundle.getSerializable("events");
         ArrayList<WeekViewEvent> newWeekNewEvent = (ArrayList<WeekViewEvent>) Objects.requireNonNull(bundle.getSerializable("events"));
         nonAvailableDaysList.addAll(newWeekNewEvent);
         for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
@@ -188,9 +180,9 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     public static Calendar getDatePart(Date date){
-        Calendar cal = Calendar.getInstance();       // get calendar instance
+        Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        return cal;                                   // return the date part
+        return cal;
     }
 
     public static Calendar resetCalendar(Calendar calendar){
@@ -220,14 +212,10 @@ public class CalendarActivity extends AppCompatActivity {
         mPopupWindow.update();
 
         TextView et_startdate = customView.findViewById(R.id.et_startdate);
-        //et_startdate.setText(new SimpleDateFormat("dd-MM-yyyy").format(currentCalendar.getTime()));
-        //startDate = stringToDate(et_startdate.getText().toString());
         et_startdate.setText("Start Date");
         startDate = currentCalendar.getTime();
 
         TextView et_enddate = customView.findViewById(R.id.et_enddate);
-        //et_enddate.setText(new SimpleDateFormat("dd-MM-yyyy").format(currentCalendar.getTime()));
-        //endDate = stringToDate(et_enddate.getText().toString());
         et_enddate.setText("End Date  ");
         endDate = currentCalendar.getTime();
 

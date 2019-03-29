@@ -8,6 +8,7 @@ import java.util.Date;
 public class Garage {
     private String uid;
     private String address;
+    @Nullable
     private String description;
     private double price;
     private boolean isReserved;
@@ -27,7 +28,7 @@ public class Garage {
     // --- GETTERS ---
     public String getUid() { return uid; }
     public String getAddress() { return address; }
-    public String getDescription() { return description; }
+    public @Nullable String getDescription() { return description; }
     public double getPrice() { return price; }
     public boolean getIsReserved() { return isReserved; }
     public ArrayList<Date> getListDateNonDispo() { return listDateNonDispo; }
@@ -35,7 +36,7 @@ public class Garage {
     // --- SETTERS ---
     public void setUid(String uid) { this.uid = uid; }
     public void setAddress(String address) { this.address = address; }
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(@Nullable String description) { this.description = description; }
     public void setPrice(double price) { this.price = price; }
     public void setReserved(boolean isReserved) { this.isReserved = isReserved; }
     public void setListDateNonDispo(ArrayList<Date> listDateNonDispo) { this.listDateNonDispo = listDateNonDispo; }

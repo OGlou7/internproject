@@ -20,6 +20,8 @@ public class MessageHelper {
                 .limit(50);
     }
 
+    // --- CREATE ---
+
     public static Task<DocumentReference> createMessageForChat(String textMessage, String chat, User userSender){
 
         // Create the Message object

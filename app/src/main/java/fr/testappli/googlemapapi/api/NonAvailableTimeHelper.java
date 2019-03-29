@@ -1,27 +1,21 @@
 package fr.testappli.googlemapapi.api;
 
-import android.util.Log;
-
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 import fr.testappli.googlemapapi.models.Garage;
 
-public class GarageHelper {
-
-    private static final String COLLECTION_NAME = "garages";
-
+public class NonAvailableTimeHelper {
+    private static final String COLLECTION_NAME = "nonAvailableTime";
     // --- COLLECTION REFERENCE ---
 
-    public static CollectionReference getGaragesCollection(String user_uid){
-        return UserHelper.getUsersCollection().document(user_uid).collection(COLLECTION_NAME);
+    public static CollectionReference getNonAvailableTimeCollection(String user_uid, String garage_uid){
+        return GarageHelper.getGaragesCollection(user_uid).document(garage_uid).collection(COLLECTION_NAME);
     }
 
     // --- CREATE ---

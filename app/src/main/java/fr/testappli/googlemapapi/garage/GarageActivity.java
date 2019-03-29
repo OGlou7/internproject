@@ -5,9 +5,10 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
@@ -21,15 +22,33 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import java.util.Objects;
+import com.bumptech.glide.Glide;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
+import java.util.UUID;
+
+import butterknife.BindView;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.GarageHelper;
+import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.models.Garage;
+import fr.testappli.googlemapapi.models.User;
 
 public class GarageActivity extends BaseActivity {
     private PopupWindow mPopupWindow;
     private RelativeLayout mRelativeLayout;
+
+
+    // FOR DESIGN
+    RecyclerView recyclerView;
+
+    // FOR DATA
+    private GarageListAdapter garageListAdapter;
 
     @Override
     protected void onResume() {
@@ -37,10 +56,22 @@ public class GarageActivity extends BaseActivity {
     }
 
     @Override
+    protected void onStart(){
+        super.onStart();
+        garageListAdapter.startListening();
+    }
+    @Override
+    protected void onStop(){
+        super.onStop();
+        garageListAdapter.stopListening();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_garage_list);
         mRelativeLayout = findViewById(R.id.garageMainLayout);
+        recyclerView = findViewById(R.id.listViewGarage);
 
         // setup the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -52,6 +83,8 @@ public class GarageActivity extends BaseActivity {
 
         // discard changes
         toolbar.setNavigationOnClickListener(v -> finish());
+
+        this.configureRecyclerView(getCurrentUser().getUid());
     }
 
     @Override
@@ -103,7 +136,6 @@ public class GarageActivity extends BaseActivity {
                 Toast.makeText(getApplicationContext(), "City is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
-            //TODO : voir comment generer uid
             createGarageInFirestore(et_address.getText().toString(), et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
             mPopupWindow.dismiss();
         });
@@ -119,7 +151,28 @@ public class GarageActivity extends BaseActivity {
 
     // REST REQUEST
     private void createGarageInFirestore(String address, @Nullable String description, double price){
-        String uid = this.getCurrentUser().getUid();
-        GarageHelper.createGarage(uid, address, description, price).addOnFailureListener(this.onFailureListener());
+        String uuid = UUID.randomUUID().toString();
+        GarageHelper.createGarageForUser(getCurrentUser().getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
+    }
+
+    // UI
+    private void configureRecyclerView(String userID){
+        this.garageListAdapter = new GarageListAdapter(generateOptionsForAdapter(GarageHelper.getAllGarageForUser(userID)));
+        garageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                recyclerView.smoothScrollToPosition(garageListAdapter.getItemCount()); // Scroll to bottom
+            }
+        });
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(this.garageListAdapter);
+    }
+
+    // Create options for RecyclerView from a Query
+    private FirestoreRecyclerOptions<Garage> generateOptionsForAdapter(Query query){
+        return new FirestoreRecyclerOptions.Builder<Garage>()
+                .setQuery(query, Garage.class)
+                .build();
     }
 }

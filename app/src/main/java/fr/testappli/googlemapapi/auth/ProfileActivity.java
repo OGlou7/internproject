@@ -1,6 +1,5 @@
 package fr.testappli.googlemapapi.auth;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
@@ -19,18 +18,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
-import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
-import fr.testappli.googlemapapi.base.LoginActivity;
 import fr.testappli.googlemapapi.models.User;
-import fr.testappli.googlemapapi.week.WeekViewEvent;
 
 public class ProfileActivity extends BaseActivity {
 

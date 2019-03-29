@@ -1,11 +1,18 @@
 package fr.testappli.googlemapapi.api;
 
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
@@ -16,7 +23,7 @@ public class UserHelper {
 
     // --- COLLECTION REFERENCE ---
 
-    private static CollectionReference getUsersCollection(){
+    public static CollectionReference getUsersCollection(){
         return FirebaseFirestore.getInstance().collection(COLLECTION_NAME);
     }
 
@@ -44,7 +51,8 @@ public class UserHelper {
     }
 
     public static Task<Void> updateListGarage(String uid, ArrayList<Garage> listGarage) {
-        return UserHelper.getUsersCollection().document(uid).update("listGarage", listGarage);
+        DocumentReference test = UserHelper.getUsersCollection().document(uid);
+        return test.update("listGarage", FieldValue.arrayUnion(new Garage("123456789","12","",12)));
     }
 
     // --- DELETE ---
