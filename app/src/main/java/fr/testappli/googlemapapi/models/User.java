@@ -12,7 +12,6 @@ public class User {
     @Nullable
     private String urlPicture;
 
-    private ArrayList<Garage> listGarage;
     private String immatriculation;
 
     public User() { }
@@ -22,7 +21,6 @@ public class User {
         this.username = username;
         this.urlPicture = urlPicture;
         this.isVendor = false;
-        this.listGarage = new ArrayList<>();
         this.immatriculation = "";
     }
 
@@ -31,7 +29,6 @@ public class User {
     public String getUsername() { return username; }
     public @Nullable String getUrlPicture() { return urlPicture; }
     public Boolean getIsVendor() { return isVendor; }
-    public ArrayList<Garage> getListGarage() { return listGarage; }
     public String getImmatriculation() { return immatriculation; }
 
     // --- SETTERS ---
@@ -39,7 +36,6 @@ public class User {
     public void setUid(String uid) { this.uid = uid; }
     public void setUrlPicture(@Nullable String urlPicture) { this.urlPicture = urlPicture; }
     public void setIsVendor(Boolean vendor) { isVendor = vendor; }
-    public void setListGarage(ArrayList<Garage> listGarage) { this.listGarage = listGarage; }
     public void setImmatriculation(String immatriculation) { this.immatriculation = immatriculation; }
 }
 

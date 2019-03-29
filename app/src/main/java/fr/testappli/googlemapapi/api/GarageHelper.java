@@ -5,14 +5,13 @@ import android.util.Log;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Objects;
 
 import fr.testappli.googlemapapi.models.Garage;
+import fr.testappli.googlemapapi.models.NonAvailableTime;
 
 public class GarageHelper {
 
@@ -54,10 +53,15 @@ public class GarageHelper {
                 .update("isReserved", isReserved);
     }
 
-    public static Task<Void> updateListDateNonDispo(String userID, String garageID, ArrayList<Date> listDateNonDispo) {
-        return GarageHelper.getGaragesCollection(userID)
-                .document(garageID)
-                .update("listDateNonDispo", listDateNonDispo);
+    public static void updateListDateNonDispo(String userID, String garageID, ArrayList<NonAvailableTime> nonAvailableTimeList) {
+        GarageHelper.getGaragesCollection(userID)
+                .document(garageID).get().addOnSuccessListener(documentSnapshot -> {
+                    Garage garage = documentSnapshot.toObject(Garage.class);
+                    Objects.requireNonNull(garage).getListDateNonDispo().addAll(nonAvailableTimeList);
+                    GarageHelper.getGaragesCollection(userID)
+                            .document(garageID)
+                            .set(garage);
+                });
     }
 
     // --- DELETE ---

@@ -18,14 +18,23 @@ import fr.testappli.googlemapapi.models.Garage;
 
 public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageListAdapter.GarageViewHolder> {
 
-    public GarageListAdapter(@NonNull FirestoreRecyclerOptions<Garage> options) {
+    public interface OnItemClickListener {
+        void onItemClick(Garage item);
+    }
+
+    private final OnItemClickListener listener;
+
+    public GarageListAdapter(@NonNull FirestoreRecyclerOptions<Garage> options, OnItemClickListener listener) {
         super(options);
+        this.listener = listener;
     }
 
     @Override
     protected void onBindViewHolder(@NonNull GarageViewHolder holder, int position, @NonNull Garage model) {
         holder.tv_row_description.setText(model.getDescription());
         holder.tv_row_garage_address.setText(model.getAddress());
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(model));
+
     }
 
     @NonNull

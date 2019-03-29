@@ -1,4 +1,4 @@
-package fr.testappli.googlemapapi;
+package fr.testappli.googlemapapi.week;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,14 +20,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import fr.testappli.googlemapapi.DateTimeInterpreter;
+import fr.testappli.googlemapapi.R;
+import fr.testappli.googlemapapi.api.GarageHelper;
+import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.models.Garage;
+import fr.testappli.googlemapapi.models.NonAvailableTime;
 import fr.testappli.googlemapapi.week.WeekView;
 import fr.testappli.googlemapapi.week.WeekViewEvent;
 
-public class WeekActivity extends AppCompatActivity {
+public class WeekActivity extends BaseActivity {
 
     private WeekView mWeekView = null;
     private ArrayList<WeekViewEvent> mNewEvents;
     private ArrayList<WeekViewEvent> mOldEvents;
+    private Garage garageClicked;
+    private ArrayList<WeekViewEvent> TTEESSTT = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,6 +44,8 @@ public class WeekActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras().getBundle("events");
+        Bundle bundleGarage = intent.getExtras().getBundle("garageClicked");
+        garageClicked = (Garage) Objects.requireNonNull(bundleGarage.getSerializable("garageClicked"));
         mOldEvents = (ArrayList<WeekViewEvent>) Objects.requireNonNull(bundle.getSerializable("events"));
         int nbOfVisibleDays = intent.getIntExtra("nbOfVisibleDays", 1);
         long dayTimeClicked = intent.getLongExtra("dayClicked", Calendar.getInstance().getTimeInMillis());
@@ -80,7 +90,7 @@ public class WeekActivity extends AppCompatActivity {
         mWeekView.setEventTextColor(getColor(R.color.myGreen));
         mWeekView.setEventTextSize(30);
 
-        // Empty view click listener
+        // Empty view event click listener
         mWeekView.setEmptyViewClickListener(time -> {
             time.set(Calendar.MINUTE, time.get(Calendar.MINUTE) < 30 ? 0 : 30 );
             Calendar endTime = (Calendar) time.clone();
@@ -88,7 +98,7 @@ public class WeekActivity extends AppCompatActivity {
 
             // Create a new event.
             long id = mNewEvents.size() == 0 ? 1 : mNewEvents.get(mNewEvents.size() - 1).getId() + 1;
-            WeekViewEvent event = new WeekViewEvent(id, "New event", time, endTime);
+            WeekViewEvent event = new WeekViewEvent(id, "New event", garageClicked.getAddress(), time, endTime);
             mNewEvents.add(event);
 
             // Refresh the week view. onMonthChange will be called again.
@@ -151,6 +161,9 @@ public class WeekActivity extends AppCompatActivity {
 
         mNewEvents = new ArrayList<>();
     }
+
+    @Override
+    public int getFragmentLayout() { return R.layout.activity_profile; }
 
     private List<WeekViewEvent> getEvents(int newYear, int newMonth) {
         ArrayList<WeekViewEvent> weekViewEventList = new ArrayList<>();
@@ -249,14 +262,22 @@ public class WeekActivity extends AppCompatActivity {
                     weekViewEvent.setColor(getColor(R.color.myRed));
                 }
                 mWeekView.notifyDatasetChanged();
-//                Bundle bundle = data.getExtras();
-//                events = (ArrayList<EventDay>) bundle.getSerializable("events");
-//                intent.putExtra("events", )
-                //finish();
+                ArrayList<NonAvailableTime> toSave = new ArrayList<>();
+
+                for(WeekViewEvent weekViewEvent : mNewEvents) {
+                    if(!TTEESSTT.contains(weekViewEvent)){
+                        TTEESSTT.add(weekViewEvent);
+                        toSave.add(new NonAvailableTime(weekViewEvent));
+                    }
+                }
+
+
+                GarageHelper.updateListDateNonDispo(getCurrentUser().getUid(), garageClicked.getUid(), toSave);
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     public static Calendar dateToCalendar(Date date){
         Calendar cal = Calendar.getInstance();       // get calendar instance

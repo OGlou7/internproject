@@ -69,7 +69,7 @@
         </activity>
 
         <activity
-            android:name=".WeekActivity"
+            android:name=".week.WeekActivity"
             android:label="@string/calendar_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">

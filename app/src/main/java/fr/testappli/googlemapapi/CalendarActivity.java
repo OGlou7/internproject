@@ -43,6 +43,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import fr.testappli.googlemapapi.models.Garage;
+import fr.testappli.googlemapapi.models.NonAvailableTime;
+import fr.testappli.googlemapapi.week.WeekActivity;
+import fr.testappli.googlemapapi.week.WeekView;
 import fr.testappli.googlemapapi.week.WeekViewEvent;
 
 public class CalendarActivity extends AppCompatActivity {
@@ -78,6 +82,23 @@ public class CalendarActivity extends AppCompatActivity {
         calendarView = findViewById(R.id.calendarView);
         mRelativeLayout = findViewById(R.id.mainLayout);
 
+        Intent intent = getIntent();
+        Bundle bundleGarage = intent.getExtras().getBundle("garageClicked");
+        Garage garageClicked = (Garage) Objects.requireNonNull(bundleGarage.getSerializable("garageClicked"));
+        ArrayList<WeekViewEvent> newWeekNewEvent = listNonAvailableToListWeekViewEvent(garageClicked.getListDateNonDispo());
+        nonAvailableDaysList.addAll(newWeekNewEvent);
+        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
+            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime()))){
+                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
+            }
+            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getEndTime()))) {
+                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getEndTime()));
+            }
+        }
+        for(Calendar test : nonAvailableCalendarList)
+            events.add(new EventDay(test, R.drawable.reservation));
+
+        calendarView.setEvents(events);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -93,12 +114,13 @@ public class CalendarActivity extends AppCompatActivity {
             Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
             Bundle bundle = new Bundle();
             bundle.putSerializable("events", nonAvailableDaysList);
+            Bundle bundleGarage2 = new Bundle();
+            bundleGarage2.putSerializable("garageClicked", garageClicked);
+            dayActivity.putExtra("garageClicked", bundleGarage2);
             dayActivity.putExtra("events", bundle);
             dayActivity.putExtra("nbOfVisibleDays", 1);
             dayActivity.putExtra("dayClicked", eventDay.getCalendar().getTimeInMillis());
             startActivityForResult(dayActivity, WEEKACTIVITY_REQUEST);
-            events.add(new EventDay(eventDay.getCalendar(), R.drawable.reservation));
-            calendarView.setEvents(events);
         });
     }
 
@@ -108,10 +130,12 @@ public class CalendarActivity extends AppCompatActivity {
         ArrayList<WeekViewEvent> newWeekNewEvent = (ArrayList<WeekViewEvent>) Objects.requireNonNull(bundle.getSerializable("events"));
         nonAvailableDaysList.addAll(newWeekNewEvent);
         for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
-            if(nonAvailableCalendarList.size() == 0)
+            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime()))){
                 nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
-            else if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime())))
-                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
+            }
+            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getEndTime()))) {
+                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getEndTime()));
+            }
         }
         for(Calendar test : nonAvailableCalendarList)
             events.add(new EventDay(test, R.drawable.reservation));
@@ -152,6 +176,20 @@ public class CalendarActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public ArrayList<WeekViewEvent> listNonAvailableToListWeekViewEvent(ArrayList<NonAvailableTime> nonAvailableTimeArrayList){
+        ArrayList<WeekViewEvent> weekViewEventArrayList = new ArrayList<>();
+        for(NonAvailableTime nonAvailableTime : nonAvailableTimeArrayList){
+            WeekViewEvent newWeekViewEvent = new WeekViewEvent();
+            newWeekViewEvent.setColor(nonAvailableTime.getColor());
+            newWeekViewEvent.setStartTime(getDatePart(nonAvailableTime.getStartTime()));
+            newWeekViewEvent.setEndTime(getDatePart(nonAvailableTime.getEndTime()));
+            newWeekViewEvent.setLocation(nonAvailableTime.getLocation());
+            newWeekViewEvent.setName(nonAvailableTime.getName());
+            newWeekViewEvent.setId(nonAvailableTimeArrayList.indexOf(nonAvailableTime));
+            weekViewEventArrayList.add(newWeekViewEvent);
+        }
+        return weekViewEventArrayList;
+    }
 
     public ArrayList<Date> getDaysBetween(Date start, Date end){
         ArrayList<Date> daysBetween = new ArrayList<>();

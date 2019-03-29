@@ -50,11 +50,6 @@ public class UserHelper {
         return UserHelper.getUsersCollection().document(uid).update("isVendor", isVendor);
     }
 
-    public static Task<Void> updateListGarage(String uid, ArrayList<Garage> listGarage) {
-        DocumentReference test = UserHelper.getUsersCollection().document(uid);
-        return test.update("listGarage", FieldValue.arrayUnion(new Garage("123456789","12","",12)));
-    }
-
     // --- DELETE ---
 
     public static Task<Void> deleteUser(String uid) {

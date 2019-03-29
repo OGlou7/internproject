@@ -134,7 +134,6 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void updateUIWhenCreating(){
-
         if (this.getCurrentUser() != null){
 
             //Get picture URL from Firebase

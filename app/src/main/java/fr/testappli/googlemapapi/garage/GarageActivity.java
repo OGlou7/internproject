@@ -22,26 +22,30 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
-import butterknife.BindView;
+import fr.testappli.googlemapapi.CalendarActivity;
+import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.GarageHelper;
-import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.models.Garage;
-import fr.testappli.googlemapapi.models.User;
+import fr.testappli.googlemapapi.models.NonAvailableTime;
+import fr.testappli.googlemapapi.week.WeekViewEvent;
+
+import static fr.testappli.googlemapapi.week.WeekActivity.dateToCalendar;
 
 public class GarageActivity extends BaseActivity {
+    private static final String TAG = "GarageActivityLog";
     private PopupWindow mPopupWindow;
     private RelativeLayout mRelativeLayout;
+    public final static int CALENDARACTIVITY_REQUEST = 1;
 
 
     // FOR DESIGN
@@ -157,7 +161,25 @@ public class GarageActivity extends BaseActivity {
 
     // UI
     private void configureRecyclerView(String userID){
-        this.garageListAdapter = new GarageListAdapter(generateOptionsForAdapter(GarageHelper.getAllGarageForUser(userID)));
+        this.garageListAdapter = new GarageListAdapter(generateOptionsForAdapter(GarageHelper.getAllGarageForUser(userID)), item -> {
+//            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+//            Date startdate = null;
+//            Date enddate = null;
+//            try {
+//                startdate = format.parse("2019-07-28T12:30Z");
+//                enddate = format.parse("2019-07-29T12:30Z");
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+//            WeekViewEvent event0 = new WeekViewEvent(startdate.getTime(), "Tag de la location : ", "Adresse du Garage, Ville", dateToCalendar(startdate), dateToCalendar(enddate));
+//            GarageHelper.updateListDateNonDispo(getCurrentUser().getUid(), item.getUid(), new NonAvailableTime(event0));
+
+            Intent calendarActivity = new Intent(GarageActivity.this, CalendarActivity.class);
+            Bundle bundleGarage = new Bundle();
+            bundleGarage.putSerializable("garageClicked", item);
+            calendarActivity.putExtra("garageClicked", bundleGarage);
+            startActivityForResult(calendarActivity, CALENDARACTIVITY_REQUEST);
+        });
         garageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {

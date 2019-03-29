@@ -114,11 +114,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         // Map Fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        firestore.setFirestoreSettings(settings);
+//        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+//        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+//                .setTimestampsInSnapshotsEnabled(true)
+//                .build();
+//        firestore.setFirestoreSettings(settings);
 
         // Maneuvers Display and controls
         tv_maneuver = findViewById(R.id.tv_manouver);

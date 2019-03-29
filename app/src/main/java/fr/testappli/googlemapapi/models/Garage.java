@@ -2,19 +2,35 @@ package fr.testappli.googlemapapi.models;
 
 import android.support.annotation.Nullable;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
 
-public class Garage {
+import fr.testappli.googlemapapi.week.WeekViewEvent;
+
+import static fr.testappli.googlemapapi.week.WeekActivity.dateToCalendar;
+
+public class Garage implements java.io.Serializable{
     private String uid;
     private String address;
     @Nullable
     private String description;
     private double price;
     private boolean isReserved;
-    private ArrayList<Date> listDateNonDispo;
+    private ArrayList<NonAvailableTime> listDateNonDispo;
 
     public Garage() { }
+
+    public void setGarage(Garage garage){
+        this.uid = garage.getUid();
+        this.address = garage.getAddress();
+        this.description = garage.getDescription();
+        this.price = garage.getPrice();
+        this.isReserved = garage.getIsReserved();
+        this.listDateNonDispo = garage.getListDateNonDispo();
+    }
 
     public Garage(String uid, String address, @Nullable String description, double price) {
         this.uid = uid;
@@ -31,7 +47,7 @@ public class Garage {
     public @Nullable String getDescription() { return description; }
     public double getPrice() { return price; }
     public boolean getIsReserved() { return isReserved; }
-    public ArrayList<Date> getListDateNonDispo() { return listDateNonDispo; }
+    public ArrayList<NonAvailableTime> getListDateNonDispo() { return listDateNonDispo; }
 
     // --- SETTERS ---
     public void setUid(String uid) { this.uid = uid; }
@@ -39,5 +55,5 @@ public class Garage {
     public void setDescription(@Nullable String description) { this.description = description; }
     public void setPrice(double price) { this.price = price; }
     public void setReserved(boolean isReserved) { this.isReserved = isReserved; }
-    public void setListDateNonDispo(ArrayList<Date> listDateNonDispo) { this.listDateNonDispo = listDateNonDispo; }
+    public void setListDateNonDispo(ArrayList<NonAvailableTime> listDateNonDispo) { this.listDateNonDispo = listDateNonDispo; }
 }
