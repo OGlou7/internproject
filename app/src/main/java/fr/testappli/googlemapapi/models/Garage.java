@@ -19,7 +19,6 @@ public class Garage implements java.io.Serializable{
     private String description;
     private double price;
     private boolean isReserved;
-    private ArrayList<NonAvailableTime> listDateNonDispo;
 
     public Garage() { }
 
@@ -29,7 +28,6 @@ public class Garage implements java.io.Serializable{
         this.description = garage.getDescription();
         this.price = garage.getPrice();
         this.isReserved = garage.getIsReserved();
-        this.listDateNonDispo = garage.getListDateNonDispo();
     }
 
     public Garage(String uid, String address, @Nullable String description, double price) {
@@ -38,7 +36,7 @@ public class Garage implements java.io.Serializable{
         this.description = description;
         this.price = price;
         this.isReserved = false;
-        this.listDateNonDispo = new ArrayList<>();
+        //this.listDateNonDispo = new ArrayList<>();
     }
 
     // --- GETTERS ---
@@ -47,7 +45,6 @@ public class Garage implements java.io.Serializable{
     public @Nullable String getDescription() { return description; }
     public double getPrice() { return price; }
     public boolean getIsReserved() { return isReserved; }
-    public ArrayList<NonAvailableTime> getListDateNonDispo() { return listDateNonDispo; }
 
     // --- SETTERS ---
     public void setUid(String uid) { this.uid = uid; }
@@ -55,5 +52,4 @@ public class Garage implements java.io.Serializable{
     public void setDescription(@Nullable String description) { this.description = description; }
     public void setPrice(double price) { this.price = price; }
     public void setReserved(boolean isReserved) { this.isReserved = isReserved; }
-    public void setListDateNonDispo(ArrayList<NonAvailableTime> listDateNonDispo) { this.listDateNonDispo = listDateNonDispo; }
 }

@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class GarageHelper {
                 .orderBy("address")
                 .limit(50);
     }
+
     public static Task<DocumentSnapshot> getGarageForUser(String userID, String garageID){
         return GarageHelper.getGaragesCollection(userID)
                 .document(garageID)
@@ -53,15 +55,22 @@ public class GarageHelper {
                 .update("isReserved", isReserved);
     }
 
-    public static void updateListDateNonDispo(String userID, String garageID, ArrayList<NonAvailableTime> nonAvailableTimeList) {
-        GarageHelper.getGaragesCollection(userID)
-                .document(garageID).get().addOnSuccessListener(documentSnapshot -> {
-                    Garage garage = documentSnapshot.toObject(Garage.class);
-                    Objects.requireNonNull(garage).getListDateNonDispo().addAll(nonAvailableTimeList);
-                    GarageHelper.getGaragesCollection(userID)
-                            .document(garageID)
-                            .set(garage);
-                });
+    public static Task<Void> updateAddress(String userID, String garageID, String address) {
+        return GarageHelper.getGaragesCollection(userID)
+                .document(garageID)
+                .update("address", address);
+    }
+
+    public static Task<Void> updateDescription(String userID, String garageID, String description) {
+        return GarageHelper.getGaragesCollection(userID)
+                .document(garageID)
+                .update("description", description);
+    }
+
+    public static Task<Void> updatePrice(String userID, String garageID, double price) {
+        return GarageHelper.getGaragesCollection(userID)
+                .document(garageID)
+                .update("price", price);
     }
 
     // --- DELETE ---
@@ -70,5 +79,23 @@ public class GarageHelper {
         return GarageHelper.getGaragesCollection(userID)
                 .document(garageID)
                 .delete();
+    }
+
+    public static Task<Void> deleteDateNonDispo(String userID, String garageID, NonAvailableTime nonAvailableTime) {
+        return GarageHelper.getGaragesCollection(userID)
+                .document(garageID)
+                .update("listDateNonDispo", FieldValue.arrayRemove(nonAvailableTime));
+                /*.get().addOnSuccessListener(documentSnapshot -> {
+                    Log.e("TESTTEST1", nonAvailableTime.getStartTime().toString() + " "
+                            + nonAvailableTime.getEndTime().toString() + " "
+                            + nonAvailableTime.getLocation() +" "
+                            +nonAvailableTime.getColor()+" "
+                            +nonAvailableTime.getName());
+                    Garage garage = documentSnapshot.toObject(Garage.class);
+                    Objects.requireNonNull(garage).getListDateNonDispo().remove(nonAvailableTime);
+                    GarageHelper.getGaragesCollection(userID)
+                        .document(garageID)
+                        .set(garage);
+        });*/
     }
 }

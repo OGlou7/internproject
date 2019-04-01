@@ -7,7 +7,6 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +28,7 @@ import com.applandeo.materialcalendarview.DatePicker;
 import com.applandeo.materialcalendarview.EventDay;
 import com.applandeo.materialcalendarview.builders.DatePickerBuilder;
 import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 
 import android.support.v7.widget.Toolbar;
@@ -43,13 +43,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import fr.testappli.googlemapapi.api.NonAvailableTimeHelper;
+import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.NonAvailableTime;
 import fr.testappli.googlemapapi.week.WeekActivity;
-import fr.testappli.googlemapapi.week.WeekView;
 import fr.testappli.googlemapapi.week.WeekViewEvent;
 
-public class CalendarActivity extends AppCompatActivity {
+public class CalendarActivity extends BaseActivity {
 
     private TimePicker starttimepicker;
     private TimePicker endtimepicker;
@@ -69,6 +70,8 @@ public class CalendarActivity extends AppCompatActivity {
     private Date startDate;
     private Date endDate;
 
+    private Garage garageClicked;
+
     public final static int WEEKACTIVITY_REQUEST = 0;
     public final static int TIME_PICKER_INTERVAL = 30;
 
@@ -83,26 +86,13 @@ public class CalendarActivity extends AppCompatActivity {
         mRelativeLayout = findViewById(R.id.mainLayout);
 
         Intent intent = getIntent();
-        Bundle bundleGarage = intent.getExtras().getBundle("garageClicked");
-        Garage garageClicked = (Garage) Objects.requireNonNull(bundleGarage.getSerializable("garageClicked"));
-        ArrayList<WeekViewEvent> newWeekNewEvent = listNonAvailableToListWeekViewEvent(garageClicked.getListDateNonDispo());
-        nonAvailableDaysList.addAll(newWeekNewEvent);
-        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
-            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime()))){
-                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
-            }
-            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getEndTime()))) {
-                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getEndTime()));
-            }
-        }
-        for(Calendar test : nonAvailableCalendarList)
-            events.add(new EventDay(test, R.drawable.reservation));
-
-        calendarView.setEvents(events);
+        Bundle bundleGarage = Objects.requireNonNull(intent.getExtras()).getBundle("garageClicked");
+        garageClicked = (Garage) Objects.requireNonNull(Objects.requireNonNull(bundleGarage).getSerializable("garageClicked"));
+        getAllNonAvailableTimeForGarage();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
 
         ImageView imageReturn = findViewById(R.id.back);
         imageReturn.setOnClickListener(v -> finish());
@@ -124,23 +114,16 @@ public class CalendarActivity extends AppCompatActivity {
         });
     }
 
+
+    @Override
+    public int getFragmentLayout() { return R.layout.activity_profile; }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bundle bundle = data.getExtras().getBundle("events");
-        ArrayList<WeekViewEvent> newWeekNewEvent = (ArrayList<WeekViewEvent>) Objects.requireNonNull(bundle.getSerializable("events"));
-        nonAvailableDaysList.addAll(newWeekNewEvent);
-        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
-            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime()))){
-                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
-            }
-            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getEndTime()))) {
-                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getEndTime()));
-            }
-        }
-        for(Calendar test : nonAvailableCalendarList)
-            events.add(new EventDay(test, R.drawable.reservation));
-
-        calendarView.setEvents(events);
+        events.clear();
+        nonAvailableCalendarList.clear();
+        nonAvailableDaysList.clear();
+        getAllNonAvailableTimeForGarage();
     }
 
     @Override
@@ -185,7 +168,7 @@ public class CalendarActivity extends AppCompatActivity {
             newWeekViewEvent.setEndTime(getDatePart(nonAvailableTime.getEndTime()));
             newWeekViewEvent.setLocation(nonAvailableTime.getLocation());
             newWeekViewEvent.setName(nonAvailableTime.getName());
-            newWeekViewEvent.setId(nonAvailableTimeArrayList.indexOf(nonAvailableTime));
+            newWeekViewEvent.setId(nonAvailableTime.getId());
             weekViewEventArrayList.add(newWeekViewEvent);
         }
         return weekViewEventArrayList;
@@ -374,6 +357,35 @@ public class CalendarActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("Error", "Exception: " + e);
         }
+    }
+
+    // REST REQUEST
+
+    public void getAllNonAvailableTimeForGarage(){
+        ArrayList<NonAvailableTime> nonAvailableTimesList = new ArrayList<>();
+        NonAvailableTimeHelper.getNonAvailableTimeCollection(Objects.requireNonNull(getCurrentUser()).getUid(), garageClicked.getUid()).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            nonAvailableTimesList.add(document.toObject(NonAvailableTime.class));
+                        }
+                        ArrayList<WeekViewEvent> newWeekNewEvent = listNonAvailableToListWeekViewEvent(nonAvailableTimesList);
+                        nonAvailableDaysList.addAll(newWeekNewEvent);
+                        for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
+                            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime()))){
+                                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
+                            }
+                            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getEndTime()))) {
+                                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getEndTime()));
+                            }
+                        }
+                        for(Calendar calendar : nonAvailableCalendarList)
+                            events.add(new EventDay(calendar, R.drawable.reservation));
+                        calendarView.setEvents(events);
+                    } else {
+                        Log.e("ERROR : getAllNonAvailableTimeForGarage", "Error getting documents: ", task.getException());
+                    }
+                });
     }
 }
 

@@ -5,6 +5,7 @@ import java.util.Date;
 import fr.testappli.googlemapapi.week.WeekViewEvent;
 
 public class NonAvailableTime implements java.io.Serializable{
+    private String mId;
     private Date mStartTime;
     private Date mEndTime;
     private String mName;
@@ -15,6 +16,7 @@ public class NonAvailableTime implements java.io.Serializable{
     }
 
     public NonAvailableTime(WeekViewEvent weekViewEvent){
+        this.mId = weekViewEvent.getId();
         this.mName = weekViewEvent.getName();
         this.mStartTime = weekViewEvent.getStartTime().getTime();
         this.mEndTime = weekViewEvent.getEndTime().getTime();
@@ -22,7 +24,8 @@ public class NonAvailableTime implements java.io.Serializable{
         this.mColor = weekViewEvent.getColor();
     }
 
-    public NonAvailableTime(String name, Date startTime, Date endTime, String location, int color) {
+    public NonAvailableTime(String id, String name, Date startTime, Date endTime, String location, int color) {
+        this.mId = id;
         this.mName = name;
         this.mStartTime = startTime;
         this.mEndTime = endTime;
@@ -30,6 +33,7 @@ public class NonAvailableTime implements java.io.Serializable{
         this.mColor = color;
     }
 
+    public String getId() { return mId; }
     public Date getStartTime() {
         return mStartTime;
     }
@@ -44,6 +48,7 @@ public class NonAvailableTime implements java.io.Serializable{
     }
     public int getColor(){ return mColor; }
 
+    public void setId(String id) { this.mId = id; }
     public void setStartTime(Date startTime) {
         this.mStartTime = startTime;
     }

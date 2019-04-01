@@ -7,7 +7,7 @@ import java.util.Calendar;
  * Website: http://april-shower.com
  */
 public class WeekViewEvent implements java.io.Serializable{
-    private long mId;
+    private String mId;
     private Calendar mStartTime;
     private Calendar mEndTime;
     private String mName;
@@ -33,7 +33,7 @@ public class WeekViewEvent implements java.io.Serializable{
      * @param endHour Hour (in 24-hour format) when the event ends.
      * @param endMinute Minute when the event ends.
      */
-    public WeekViewEvent(long id, String name, int startYear, int startMonth, int startDay, int startHour, int startMinute, int endYear, int endMonth, int endDay, int endHour, int endMinute) {
+    public WeekViewEvent(String id, String name, int startYear, int startMonth, int startDay, int startHour, int startMinute, int endYear, int endMonth, int endDay, int endHour, int endMinute) {
         this.mId = id;
 
         this.mStartTime = Calendar.getInstance();
@@ -61,7 +61,7 @@ public class WeekViewEvent implements java.io.Serializable{
      * @param startTime The time when the event starts.
      * @param endTime The time when the event ends.
      */
-    public WeekViewEvent(long id, String name, String location, Calendar startTime, Calendar endTime) {
+    public WeekViewEvent(String id, String name, String location, Calendar startTime, Calendar endTime) {
         this.mId = id;
         this.mName = name;
         this.mLocation = location;
@@ -76,7 +76,7 @@ public class WeekViewEvent implements java.io.Serializable{
      * @param startTime The time when the event starts.
      * @param endTime The time when the event ends.
      */
-    public WeekViewEvent(long id, String name, Calendar startTime, Calendar endTime) {
+    public WeekViewEvent(String id, String name, Calendar startTime, Calendar endTime) {
         this(id, name, null, startTime, endTime);
     }
 
@@ -121,11 +121,11 @@ public class WeekViewEvent implements java.io.Serializable{
         this.mColor = color;
     }
 
-    public long getId() {
+    public String getId() {
         return mId;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.mId = id;
     }
 
@@ -140,8 +140,8 @@ public class WeekViewEvent implements java.io.Serializable{
 
     }
 
-    @Override
-    public int hashCode() {
-        return (int) (mId ^ (mId >>> 32));
-    }
+//    @Override
+//    public int hashCode() {
+//        return (int) (mId ^ (mId >>> 32));
+//    }
 }

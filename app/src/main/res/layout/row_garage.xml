@@ -42,9 +42,20 @@
         android:id="@+id/cb_row_garage_is_reserved"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/iv_garage_row_more"
         android:checked="true"
         android:layout_margin="@dimen/smallMargin"
         android:buttonTint="@color/myRed"
+        />
+
+    <ImageView
+        android:id="@+id/iv_garage_row_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_more_vert"
+        android:layout_margin="@dimen/smallMargin"
+        android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
+        android:tint="@color/myDarkGrey"
         />
 </RelativeLayout>

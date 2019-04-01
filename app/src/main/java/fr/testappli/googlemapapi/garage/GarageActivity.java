@@ -5,14 +5,21 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -25,6 +32,7 @@ import android.widget.Toast;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -137,12 +145,83 @@ public class GarageActivity extends BaseActivity {
             }
 
             if(et_price.getText().toString().isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Price is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
+//            String uri = "geo:0,0?q=" + completeAddress.replace(" ","+");
+//            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+//            intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+//            startActivity(intent);
+
+            createGarageInFirestore(completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
+            mPopupWindow.dismiss();
+        });
+
+
+        ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
+        ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
+
+        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mPopupWindow.showAtLocation(mRelativeLayout, Gravity.CENTER,0,0);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+    }
+
+    public void modifyGarage(Garage garage){
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.new_garage_form,null);
+
+        mPopupWindow = new PopupWindow(
+                customView,
+                ActionBar.LayoutParams.MATCH_PARENT,
+                ActionBar.LayoutParams.MATCH_PARENT
+        );
+
+        mPopupWindow.setFocusable(true);
+        mPopupWindow.update();
+
+        EditText et_description = customView.findViewById(R.id.et_description);
+        EditText et_address = customView.findViewById(R.id.et_address);
+        EditText et_country = customView.findViewById(R.id.et_country);
+        EditText et_city = customView.findViewById(R.id.et_city);
+        EditText et_price = customView.findViewById(R.id.et_price);
+
+        et_description.setText(garage.getDescription());
+        et_address.setText(garage.getAddress().split(",")[0]);
+        et_city.setText(garage.getAddress().split(",")[1]);
+        et_country.setText(garage.getAddress().split(",")[2]);
+        et_price.setText(String.valueOf(garage.getPrice()));
+
+        Button b_register = customView.findViewById(R.id.b_register);
+        b_register.setOnClickListener(view -> {
+            if(et_address.getText().toString().isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Address is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(et_country.getText().toString().isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Country is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if(et_city.getText().toString().isEmpty()) {
                 Toast.makeText(getApplicationContext(), "City is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
-            createGarageInFirestore(et_address.getText().toString(), et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
+
+            if(et_price.getText().toString().isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Price is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
+            updateGarageInFirestore(garage.getUid(), completeAddress, et_description.getText().toString(), Long.valueOf(et_price.getText().toString()));
             mPopupWindow.dismiss();
         });
+
 
         ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
         ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
@@ -159,27 +238,56 @@ public class GarageActivity extends BaseActivity {
         GarageHelper.createGarageForUser(getCurrentUser().getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
     }
 
+    private void updateGarageInFirestore(String garageID, String address,String description,long price){
+        GarageHelper.updateAddress(getCurrentUser().getUid(), garageID, address);
+        GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
+        GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);
+    }
+
     // UI
     private void configureRecyclerView(String userID){
-        this.garageListAdapter = new GarageListAdapter(generateOptionsForAdapter(GarageHelper.getAllGarageForUser(userID)), item -> {
-//            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-//            Date startdate = null;
-//            Date enddate = null;
-//            try {
-//                startdate = format.parse("2019-07-28T12:30Z");
-//                enddate = format.parse("2019-07-29T12:30Z");
-//            } catch (ParseException e) {
-//                e.printStackTrace();
-//            }
-//            WeekViewEvent event0 = new WeekViewEvent(startdate.getTime(), "Tag de la location : ", "Adresse du Garage, Ville", dateToCalendar(startdate), dateToCalendar(enddate));
-//            GarageHelper.updateListDateNonDispo(getCurrentUser().getUid(), item.getUid(), new NonAvailableTime(event0));
+        this.garageListAdapter = new GarageListAdapter(generateOptionsForAdapter(GarageHelper.getAllGarageForUser(userID)),
+            // OnItemClickListener
+            item -> {
+                Intent calendarActivity = new Intent(GarageActivity.this, CalendarActivity.class);
+                Bundle bundleGarage = new Bundle();
+                bundleGarage.putSerializable("garageClicked", item);
+                calendarActivity.putExtra("garageClicked", bundleGarage);
+                startActivityForResult(calendarActivity, CALENDARACTIVITY_REQUEST);
+            },
+            // OnItemLongClickListener
+            item -> {
+                        new AlertDialog.Builder(this)
+                            .setMessage(R.string.popup_message_confirmation_delete_garage)
+                            .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(getCurrentUser().getUid(), item.getUid()))
+                            .setNegativeButton(R.string.popup_message_choice_no, null)
+                            .show();
+            },
+            // OnMoreImageClickListener
+            (v, g) -> {
+                PopupMenu popup = new PopupMenu(v.getContext(), v);
+                popup.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.action_modify_garage:
+                            modifyGarage(g);
+                            return true;
+                        case R.id.action_delete_garage:
+                            new AlertDialog.Builder(this)
+                                    .setMessage(R.string.popup_message_confirmation_delete_garage)
+                                    .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(getCurrentUser().getUid(), g.getUid()))
+                                    .setNegativeButton(R.string.popup_message_choice_no, null)
+                                    .show();
+                            return true;
+                        default:
+                            return false;
+                    }
+                });
+                popup.inflate(R.menu.menu_garage_clicked);
+                popup.setGravity(Gravity.RIGHT);
+                popup.show();
+            }
+        );
 
-            Intent calendarActivity = new Intent(GarageActivity.this, CalendarActivity.class);
-            Bundle bundleGarage = new Bundle();
-            bundleGarage.putSerializable("garageClicked", item);
-            calendarActivity.putExtra("garageClicked", bundleGarage);
-            startActivityForResult(calendarActivity, CALENDARACTIVITY_REQUEST);
-        });
         garageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {

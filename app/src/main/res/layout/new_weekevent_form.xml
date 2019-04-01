@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/popup_bg">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/title_new_weekevent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorBlack"
+            android:text="New Garage Form"/>
+
+        <ImageButton
+            android:id="@+id/ib_cross"
+            android:layout_alignParentEnd="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_transparent"
+            android:src="@drawable/ic_round_clear_24px"/>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/layoutName"
+            android:layout_below="@+id/title_new_weekevent"
+            android:layout_marginTop="@dimen/smallMargin"
+            android:layout_marginBottom="@dimen/smallMargin"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_weekevent_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:textSize="@dimen/normalText"
+                android:text="Name :" />
+
+            <EditText
+                android:id="@+id/et_weekevent_name"
+                android:layout_toEndOf="@+id/tv_weekevent_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:hint="Name"
+                tools:ignore="Autofill,LabelFor" />
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/layout_startdate"
+            android:layout_below="@+id/layoutName"
+            android:backgroundTint="@color/myColorSand"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:id="@+id/et_startdate"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:textSize="@dimen/largeText"
+                android:text="01/01/1997"
+                tools:ignore="Autofill"
+                />
+
+            <ImageButton
+                android:id="@+id/ib_startdate"
+                android:layout_toEndOf="@+id/et_startdate"
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_calendar_24px"
+                />
+            <!--<TimePicker
+                android:id="@+id/starttimepicker"
+                android:layout_alignParentEnd="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:timePickerMode="spinner"
+                android:scaleX="1"
+                android:scaleY="1"
+                android:layout_margin="@dimen/smallMargin"
+                />-->
+            <NumberPicker
+                android:id="@+id/starttimepicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/smallMargin"
+                android:layout_alignParentEnd="true"
+                />
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@+id/layout_startdate"
+            >
+            <Button
+                android:id="@+id/b_register"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save"
+                android:background="#3f76ff"
+                android:textColor="#fff"
+                android:layout_margin="@dimen/tinyMargin"
+                />
+
+            <Button
+                android:id="@+id/b_delete"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:background="@color/myRed"
+                android:textColor="#fff"
+                android:layout_margin="@dimen/tinyMargin"
+                />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</ScrollView>
