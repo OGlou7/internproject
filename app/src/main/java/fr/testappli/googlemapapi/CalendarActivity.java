@@ -92,10 +92,10 @@ public class CalendarActivity extends BaseActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-
-        ImageView imageReturn = findViewById(R.id.back);
-        imageReturn.setOnClickListener(v -> finish());
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         currentCalendar = Calendar.getInstance();
         calendarView.setHeaderColor(R.color.calendar_header_color);
@@ -143,17 +143,6 @@ public class CalendarActivity extends BaseActivity {
                 } catch (OutOfDateRangeException e) {
                     e.printStackTrace();
                 }
-                return true;
-            case R.id.action_add:
-                newReservation();
-                return true;
-            case R.id.action_settings1:
-                Intent dayActivity = new Intent(getApplicationContext(), WeekActivity.class);
-                dayActivity.putExtra("nbOfVisibleDays", 1);
-                startActivityForResult(dayActivity, WEEKACTIVITY_REQUEST);
-                finish();
-                return true;
-            case R.id.action_settings3:
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -92,8 +92,6 @@ public class GarageActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setOnClickListener(v -> this.addGarage());
-
-        // discard changes
         toolbar.setNavigationOnClickListener(v -> finish());
 
         this.configureRecyclerView(getCurrentUser().getUid());
@@ -218,7 +216,7 @@ public class GarageActivity extends BaseActivity {
             }
 
             String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
-            updateGarageInFirestore(garage.getUid(), completeAddress, et_description.getText().toString(), Long.valueOf(et_price.getText().toString()));
+            updateGarageInFirestore(garage.getUid(), completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
             mPopupWindow.dismiss();
         });
 
@@ -238,7 +236,7 @@ public class GarageActivity extends BaseActivity {
         GarageHelper.createGarageForUser(getCurrentUser().getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
     }
 
-    private void updateGarageInFirestore(String garageID, String address,String description,long price){
+    private void updateGarageInFirestore(String garageID, String address,String description,double price){
         GarageHelper.updateAddress(getCurrentUser().getUid(), garageID, address);
         GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
         GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);

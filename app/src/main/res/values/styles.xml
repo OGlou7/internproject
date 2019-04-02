@@ -25,4 +25,9 @@
         <item name="windowNoTitle">true</item>
         <item name="android:textColorHint">@android:color/white</item>
     </style>
+
+    <!-- NUMBER PICKER STYLE -->
+    <style name="NumberPickerText">
+        <item name="android:textSize">24sp</item>
+    </style>
 </resources>

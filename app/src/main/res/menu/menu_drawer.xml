@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/activity_main_drawer_map"
+            android:icon="@drawable/ic_action_refresh"
+            android:title="Map" />
+    </group>
+
+    <item android:title="Configuration">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/activity_main_drawer_profile"
+                    android:icon="@drawable/ic_action_refresh"
+                    android:title="Profil" />
+                <item
+                    android:id="@+id/activity_main_drawer_settings"
+                    android:icon="@drawable/ic_action_refresh"
+                    android:title="Paramètres" />
+            </group>
+        </menu>
+    </item>
+
+    <item android:title="Proprietaire">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/activity_main_drawer_garages"
+                    android:icon="@drawable/ic_action_refresh"
+                    android:title="Garages" />
+                <item
+                    android:id="@+id/activity_main_drawer_overview"
+                    android:icon="@drawable/ic_action_refresh"
+                    android:title="Overview" />
+                <item
+                    android:id="@+id/activity_main_drawer_chats"
+                    android:icon="@drawable/ic_action_refresh"
+                    android:title="Chats" />
+            </group>
+        </menu>
+    </item>
+
+</menu>

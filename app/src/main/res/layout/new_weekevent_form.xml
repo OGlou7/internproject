@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/colorBlack"
-            android:text="New Garage Form"/>
+            android:text="Modify event Form"/>
 
         <ImageButton
             android:id="@+id/ib_cross"
@@ -56,50 +56,113 @@
 
 
         <RelativeLayout
+            android:id="@+id/relativeLayout_weekActivity_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/layout_startdate"
             android:layout_below="@+id/layoutName"
             android:backgroundTint="@color/myColorSand"
             android:orientation="horizontal"
             >
 
-            <TextView
-                android:id="@+id/et_startdate"
-                android:layout_centerVertical="true"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/linearlayout_tvdate"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textSize="@dimen/largeText"
-                android:text="01/01/1997"
-                tools:ignore="Autofill"
-                />
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/tv_week_startdate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_weight="0.5"
+                    android:layout_margin="@dimen/tinyMargin"
+                    android:inputType="text"
+                    android:textSize="@dimen/largeText"
+                    android:text="Start Date"
+                    tools:ignore="Autofill"
+                    />
 
-            <ImageButton
-                android:id="@+id/ib_startdate"
-                android:layout_toEndOf="@+id/et_startdate"
-                android:layout_centerInParent="true"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/tv_week_enddate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_weight="0.5"
+                    android:layout_margin="@dimen/tinyMargin"
+                    android:inputType="text"
+                    android:textSize="@dimen/largeText"
+                    android:text="End Date  "
+                    tools:ignore="Autofill"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearlayout_startdate"
+                android:layout_below="@+id/linearlayout_tvdate"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_calendar_24px"
-                />
-            <!--<TimePicker
-                android:id="@+id/starttimepicker"
-                android:layout_alignParentEnd="true"
-                android:layout_width="wrap_content"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/et_week_startdate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/smallMargin"
+                    android:inputType="text"
+                    android:textSize="@dimen/largeText"
+                    android:text="01/01/1997"
+                    tools:ignore="Autofill"
+                    />
+
+                <ImageButton
+                    android:id="@+id/ib_week_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_calendar_24px"
+                    />
+
+                <TextView
+                    android:id="@+id/et_week_enddate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/smallMargin"
+                    android:inputType="text"
+                    android:textSize="@dimen/largeText"
+                    android:text="01/01/1997"
+                    tools:ignore="Autofill"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:timePickerMode="spinner"
-                android:scaleX="1"
-                android:scaleY="1"
-                android:layout_margin="@dimen/smallMargin"
-                />-->
-            <NumberPicker
-                android:id="@+id/starttimepicker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/smallMargin"
-                android:layout_alignParentEnd="true"
-                />
+                android:layout_below="@+id/linearlayout_startdate"
+                android:gravity="center">
+
+                <NumberPicker
+                    android:id="@+id/np_starttimepicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:theme="@style/NumberPickerText"
+                    android:layout_marginStart="@dimen/smallMargin"
+                    android:layout_marginEnd="@dimen/smallMargin"
+                    android:layout_marginTop="@dimen/smallMargin"
+                    android:layout_marginBottom="@dimen/smallMargin"
+                    />
+
+                <NumberPicker
+                    android:id="@+id/np_endtimepicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:theme="@style/NumberPickerText"
+                    android:layout_marginStart="@dimen/smallMargin"
+                    android:layout_marginEnd="@dimen/smallMargin"
+                    android:layout_marginTop="@dimen/smallMargin"
+                    android:layout_marginBottom="@dimen/smallMargin"
+                    />
+
+            </LinearLayout>
         </RelativeLayout>
 
 
@@ -107,10 +170,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_below="@+id/layout_startdate"
+            android:layout_below="@+id/relativeLayout_weekActivity_date"
             >
             <Button
-                android:id="@+id/b_register"
+                android:id="@+id/b_weekevent_save"
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -121,7 +184,7 @@
                 />
 
             <Button
-                android:id="@+id/b_delete"
+                android:id="@+id/b_weekevent_delete"
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

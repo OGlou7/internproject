@@ -133,7 +133,7 @@
                 android:layout_toEndOf="@+id/tv_price"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:hint="Price"
                 tools:ignore="Autofill,LabelFor" />
         </RelativeLayout>

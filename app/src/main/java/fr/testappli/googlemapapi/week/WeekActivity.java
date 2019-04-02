@@ -32,6 +32,10 @@ import android.widget.Toast;
 //import com.alamkanak.weekview.WeekView;
 //import com.alamkanak.weekview.WeekViewEvent;
 
+import com.applandeo.materialcalendarview.CalendarView;
+import com.applandeo.materialcalendarview.DatePicker;
+import com.applandeo.materialcalendarview.builders.DatePickerBuilder;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -118,15 +122,16 @@ public class WeekActivity extends BaseActivity {
         // Empty view event click listener
         mWeekView.setEmptyViewClickListener(time -> {
             time.set(Calendar.MINUTE, time.get(Calendar.MINUTE) < 30 ? 0 : 30 );
-            Calendar endTime = (Calendar) time.clone();
-            endTime.add(Calendar.MINUTE, 30);
+//            Calendar endTime = (Calendar) time.clone();
+//            endTime.add(Calendar.MINUTE, 30);
+
+            addEvent(time);
 
             // Create a new event.
-            String uuid = UUID.randomUUID().toString();
-            WeekViewEvent event = new WeekViewEvent(uuid, "New event", garageClicked.getAddress(), time, endTime);
-            mNewEvents.add(event);
-
-            mWeekView.notifyDatasetChanged();
+//            String uuid = UUID.randomUUID().toString();
+//            WeekViewEvent event = new WeekViewEvent(uuid, "New event", garageClicked.getAddress(), time, endTime);
+//            mNewEvents.add(event);
+//            mWeekView.notifyDatasetChanged();
         });
 
         // Event click listener
@@ -250,8 +255,6 @@ public class WeekActivity extends BaseActivity {
             case R.id.action_today:
                 mWeekView.goToToday();
                 return true;
-            case R.id.action_add:
-                return true;
             case R.id.action_save:
                 for(WeekViewEvent weekViewEvent : mNewEvents){
                     weekViewEvent.setColor(getColor(R.color.myRed));
@@ -276,6 +279,121 @@ public class WeekActivity extends BaseActivity {
         return cal;
     }
 
+
+    public void addEvent(Calendar timeClicked){
+        Calendar endCalendar = (Calendar) timeClicked.clone();
+        endCalendar.add(Calendar.MINUTE, 30);
+
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.new_weekevent_form,null);
+
+        PopupWindow mPopupWindow = new PopupWindow(
+                customView,
+                ActionBar.LayoutParams.MATCH_PARENT,
+                ActionBar.LayoutParams.MATCH_PARENT
+        );
+
+        mPopupWindow.setFocusable(true);
+        mPopupWindow.update();
+
+        NumberPicker np_starttimepicker = customView.findViewById(R.id.np_starttimepicker);
+        NumberPicker np_endtimepicker = customView.findViewById(R.id.np_endtimepicker);
+
+        List<String> displayedValues = new ArrayList<>();
+        for(int i=0;i<24;i++){
+            displayedValues.add(String.format("%02d:00", i));
+            displayedValues.add(String.format("%02d:30", i));
+        }
+        np_starttimepicker.setMinValue(0);
+        np_starttimepicker.setMaxValue(displayedValues.size() - 1);
+        np_starttimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
+        np_starttimepicker.setValue((timeClicked.get(Calendar.HOUR_OF_DAY) * 2) + (timeClicked.get(Calendar.MINUTE) == 30 ? 1 : 0));
+
+        np_endtimepicker.setMinValue(0);
+        np_endtimepicker.setMaxValue(displayedValues.size() - 1);
+        np_endtimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
+        np_endtimepicker.setValue((endCalendar.get(Calendar.HOUR_OF_DAY) * 2) + (endCalendar.get(Calendar.MINUTE) == 30 ? 1 : 0));
+
+
+        TextView et_week_startdate = customView.findViewById(R.id.et_week_startdate);
+        et_week_startdate.setText(String.format("%02d/%02d/%02d", timeClicked.get(Calendar.DAY_OF_MONTH),
+                timeClicked.get(Calendar.MONTH) + 1,
+                timeClicked.get(Calendar.YEAR)));
+
+        TextView et_week_enddate = customView.findViewById(R.id.et_week_enddate);
+        et_week_enddate.setText(String.format("%02d/%02d/%02d", endCalendar.get(Calendar.DAY_OF_MONTH),
+                endCalendar.get(Calendar.MONTH) + 1,
+                endCalendar.get(Calendar.YEAR)));
+
+
+        ArrayList<Calendar> test = new ArrayList<>();
+        ImageButton ib_week_date = customView.findViewById(R.id.ib_week_date);
+        ib_week_date.setOnClickListener(b -> {
+            DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
+                test.addAll(calendars);
+                et_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
+                        calendars.get(0).get(Calendar.MONTH) + 1,
+                        calendars.get(0).get(Calendar.YEAR)));
+                et_week_enddate.setText(String.format("%02d/%02d/%02d", calendars.get(calendars.size() - 1).get(Calendar.DAY_OF_MONTH),
+                        calendars.get(calendars.size() - 1).get(Calendar.MONTH) + 1,
+                        calendars.get(calendars.size() - 1).get(Calendar.YEAR)));
+            }).pickerType(CalendarView.RANGE_PICKER);
+
+            DatePicker datePicker = builder.build();
+            datePicker.show();
+        });
+
+        EditText et_weekevent_name = customView.findViewById(R.id.et_weekevent_name);
+
+        Button b_weekevent_delete = customView.findViewById(R.id.b_weekevent_delete);
+        b_weekevent_delete.setText("Cancel");
+        b_weekevent_delete.setOnClickListener(view -> mPopupWindow.dismiss());
+
+        Button b_weekevent_save = customView.findViewById(R.id.b_weekevent_save);
+        b_weekevent_save.setOnClickListener(view -> {
+            Calendar startTime = timeClicked;
+            startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
+            startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
+
+            Calendar endTime = endCalendar;
+            endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
+            endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
+
+            if(!test.isEmpty()) {
+                startTime = test.get(0);
+                startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
+                startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
+
+                endTime = test.get(test.size() - 1);
+                endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
+                endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
+            }
+
+            String uuid = UUID.randomUUID().toString();
+            WeekViewEvent event = new WeekViewEvent(uuid, et_weekevent_name.getText().toString(), garageClicked.getAddress(), startTime, endTime);
+            if(!endTime.after(startTime)) {
+                Log.d("WeekActivity", "Start is before end !");
+                Toast.makeText(getApplicationContext(), "Start is before end !", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            mNewEvents.add(event);
+            mWeekView.notifyDatasetChanged();
+
+            mPopupWindow.dismiss();
+        });
+
+        ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
+        ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
+
+        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+    }
+
+
     public void modifyEvent(WeekViewEvent weekViewEvent){
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 
@@ -290,41 +408,58 @@ public class WeekActivity extends BaseActivity {
         mPopupWindow.setFocusable(true);
         mPopupWindow.update();
 
-//        TimePicker starttimepicker = customView.findViewById(R.id.starttimepicker);
-//        setTimePickerInterval(starttimepicker);
-//        starttimepicker.setIs24HourView(true);
-//        starttimepicker.setHour(weekViewEvent.getStartTime().get(Calendar.HOUR_OF_DAY));
-//        starttimepicker.setMinute(weekViewEvent.getStartTime().get(Calendar.MINUTE));
-        NumberPicker starttimepicker = customView.findViewById(R.id.starttimepicker);
+        NumberPicker np_starttimepicker = customView.findViewById(R.id.np_starttimepicker);
+        NumberPicker np_endtimepicker = customView.findViewById(R.id.np_endtimepicker);
 
         List<String> displayedValues = new ArrayList<>();
         for(int i=0;i<24;i++){
             displayedValues.add(String.format("%02d:00", i));
             displayedValues.add(String.format("%02d:30", i));
         }
-        starttimepicker.setMinValue(0);
-        starttimepicker.setMaxValue(displayedValues.size() - 1);
-        starttimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
+        np_starttimepicker.setMinValue(0);
+        np_starttimepicker.setMaxValue(displayedValues.size() - 1);
+        np_starttimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
+        np_starttimepicker.setValue((weekViewEvent.getStartTime().get(Calendar.HOUR_OF_DAY) * 2) + (weekViewEvent.getStartTime().get(Calendar.MINUTE) == 30 ? 1 : 0));
 
-        TextView et_startdate = customView.findViewById(R.id.et_startdate);
-        et_startdate.setText(String.valueOf(weekViewEvent.getStartTime().get(Calendar.DAY_OF_MONTH))+"/"+
-                String.valueOf(weekViewEvent.getStartTime().get(Calendar.MONTH) + 1)+"/"+
-                String.valueOf(weekViewEvent.getStartTime().get(Calendar.YEAR)));
+        np_endtimepicker.setMinValue(0);
+        np_endtimepicker.setMaxValue(displayedValues.size() - 1);
+        np_endtimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
+        np_endtimepicker.setValue((weekViewEvent.getEndTime().get(Calendar.HOUR_OF_DAY) * 2) + (weekViewEvent.getEndTime().get(Calendar.MINUTE) == 30 ? 1 : 0));
+
+
+        TextView et_week_startdate = customView.findViewById(R.id.et_week_startdate);
+        et_week_startdate.setText(String.format("%02d/%02d/%02d", weekViewEvent.getStartTime().get(Calendar.DAY_OF_MONTH),
+                weekViewEvent.getStartTime().get(Calendar.MONTH) + 1,
+                weekViewEvent.getStartTime().get(Calendar.YEAR)));
+
+        TextView et_week_enddate = customView.findViewById(R.id.et_week_enddate);
+        et_week_enddate.setText(String.format("%02d/%02d/%02d", weekViewEvent.getEndTime().get(Calendar.DAY_OF_MONTH),
+                weekViewEvent.getEndTime().get(Calendar.MONTH) + 1,
+                weekViewEvent.getEndTime().get(Calendar.YEAR)));
+
+
+        ArrayList<Calendar> test = new ArrayList<>();
+        ImageButton ib_week_date = customView.findViewById(R.id.ib_week_date);
+        ib_week_date.setOnClickListener(b -> {
+            DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
+                test.addAll(calendars);
+                et_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
+                        calendars.get(0).get(Calendar.MONTH) + 1,
+                        calendars.get(0).get(Calendar.YEAR)));
+                et_week_enddate.setText(String.format("%02d/%02d/%02d", calendars.get(calendars.size() - 1).get(Calendar.DAY_OF_MONTH),
+                        calendars.get(calendars.size() - 1).get(Calendar.MONTH) + 1,
+                        calendars.get(calendars.size() - 1).get(Calendar.YEAR)));
+            }).pickerType(CalendarView.RANGE_PICKER);
+
+            DatePicker datePicker = builder.build();
+            datePicker.show();
+        });
 
         EditText et_weekevent_name = customView.findViewById(R.id.et_weekevent_name);
         et_weekevent_name.setText(weekViewEvent.getName());
 
-        Button b_register = customView.findViewById(R.id.b_register);
-        b_register.setOnClickListener(view -> {
-            if(et_weekevent_name.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Address is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            mPopupWindow.dismiss();
-        });
-
-        Button b_delete = customView.findViewById(R.id.b_delete);
-        b_delete.setOnClickListener(view -> {
+        Button b_weekevent_delete = customView.findViewById(R.id.b_weekevent_delete);
+        b_weekevent_delete.setOnClickListener(view -> {
             new AlertDialog.Builder(this)
                 .setMessage(R.string.popup_message_confirmation_delete_garage)
                 .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> deleteNonAvailableTimeInFirestore(weekViewEvent))
@@ -334,6 +469,42 @@ public class WeekActivity extends BaseActivity {
             mPopupWindow.dismiss();
         });
 
+        Button b_weekevent_save = customView.findViewById(R.id.b_weekevent_save);
+        b_weekevent_save.setOnClickListener(view -> {
+            Calendar startTime = weekViewEvent.getStartTime();
+            startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
+            startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
+
+            Calendar endTime = weekViewEvent.getEndTime();
+            endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
+            endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
+
+            if(!test.isEmpty()) {
+                startTime = test.get(0);
+                startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
+                startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
+
+                endTime = test.get(test.size() - 1);
+                endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
+                endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
+            }
+
+            if(endTime.after(startTime)) {
+                weekViewEvent.setStartTime(startTime);
+                weekViewEvent.setEndTime(endTime);
+            }
+            else {
+                Log.d("WeekActivity", "Start is before end !");
+                Toast.makeText(getApplicationContext(), "Start is before end !", Toast.LENGTH_SHORT).show();
+            }
+
+            weekViewEvent.setName(et_weekevent_name.getText().toString());
+
+            updateNonAvailableTimeInFirestore(weekViewEvent);
+            mWeekView.notifyDatasetChanged();
+
+            mPopupWindow.dismiss();
+        });
 
         ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
         ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
@@ -364,6 +535,10 @@ public class WeekActivity extends BaseActivity {
     // REST REQUEST
     private void createNonAvailableTimeInFirestore(WeekViewEvent weekViewEvent){
         NonAvailableTimeHelper.createNonAvailableTimeForGarage(getCurrentUser().getUid(), garageClicked.getUid(), weekViewEvent.getId(), weekViewEvent).addOnFailureListener(this.onFailureListener());
+    }
+
+    private void updateNonAvailableTimeInFirestore(WeekViewEvent weekViewEvent){
+        NonAvailableTimeHelper.updateNonAvailableTime(getCurrentUser().getUid(), garageClicked.getUid(), weekViewEvent.getId(), weekViewEvent).addOnFailureListener(this.onFailureListener());
     }
 
     private void deleteNonAvailableTimeInFirestore(WeekViewEvent weekViewEvent){

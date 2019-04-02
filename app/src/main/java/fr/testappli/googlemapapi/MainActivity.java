@@ -15,9 +15,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -51,8 +54,6 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -80,8 +81,10 @@ import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
 
 public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
+    // PERMISSIONS
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5445;
 
+    // MAP
     private GoogleMap googleMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Marker currentLocationMarker;
@@ -102,7 +105,12 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     private  BroadcastReceiver broadcastReceiver;
 
-    // L'identifiant de notre requête
+    // UI
+    private Toolbar toolbar;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+
+    // INTENT REQUEST
     public final static int CALENDARACTIVITY_REQUEST = 1;
     public final static int PROFILEACTIVITY_REQUEST = 2;
 
@@ -111,14 +119,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        // Map Fragment
-        SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
-
-//        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-//        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-//                .setTimestampsInSnapshotsEnabled(true)
-//                .build();
-//        firestore.setFirestoreSettings(settings);
 
         // Maneuvers Display and controls
         tv_maneuver = findViewById(R.id.tv_manouver);
@@ -126,18 +126,75 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         tv_maneuver.setVisibility(View.GONE);
         img_maneuver.setVisibility(View.GONE);
 
-        ImageView imageReturn = findViewById(R.id.switch_mode);
-        imageReturn.setOnClickListener(v -> {
-            Intent calendarActivity = new Intent(MainActivity.this, CalendarActivity.class);
-            startActivityForResult(calendarActivity, CALENDARACTIVITY_REQUEST);
-        });
-
-        // Handle Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+        // Handle configuration
+        configureToolbar();
+        configureDrawerLayout();
+        configureNavigationView();
 
         // Handle map configuration
+        configureMap();
+
+        // Handle receiver to finish activity
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if(Objects.requireNonNull(action).equals("finish")){
+                    finish();
+                }
+            }
+        };
+        registerReceiver(broadcastReceiver, new IntentFilter("finish"));
+
+        // TODO: get garage  from database
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        Date startdate = null;
+        Date enddate = null;
+        try {
+            startdate = format.parse("2019-03-20T12:30Z");
+            enddate = format.parse("2019-03-22T12:30Z");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        reservationArrayList.add(new Reservation("119 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.4));
+        reservationArrayList.add(new Reservation("101 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.5));
+        reservationArrayList.add(new Reservation("89 rue des maraichers, Villebon-sur-Yvette, France", startdate, enddate, "bla", 2.6));
+        reservationArrayList.add(new Reservation("Paris, Paris, France", startdate, enddate, "bla", 2.7));
+
+        configureListRecylcerView();
+    }
+
+    void configureToolbar(){
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+    }
+
+    void configureListRecylcerView(){
+        // set up the RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.listView2);
+        LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(horizontalLayoutManager);
+
+        // set up horizontal list
+        MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, reservationArrayList);
+        adapter2.setClickListener((view, position) -> {
+            Reservation reservationClicked = adapter2.getItem(position);
+            //view.findViewById(R.id.parent).setBackgroundColor(getColor(R.color.myOrange));
+            view.findViewById(R.id.iv_navigate).setOnClickListener(v -> {
+                //recyclerView.setVisibility(View.GONE);
+                postDirectionRequestFromLatLong(getLatLongFromAddressString(getApplicationContext(), reservationClicked.getCompleteAddress()));
+            });
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),reservationClicked.getCompleteAddress())));
+            Toast.makeText(this, reservationClicked.getAddress(), Toast.LENGTH_SHORT).show();
+        });
+        recyclerView.setAdapter(adapter2);
+    }
+
+    void configureMap(){
+        // Map Fragment
+        SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
         assert supportMapFragment != null;
         supportMapFragment.getMapAsync(this);
         findViewById(R.id.currentLocationImageButton).setOnClickListener(currentLocationClickListener);
@@ -181,54 +238,60 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 Log.i("Error", "An error occurred: " + status);
             }
         });
-
-        // Handle receiver to finish activity
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if(action.equals("finish")){
-                    finish();
-                }
-            }
-        };
-        registerReceiver(broadcastReceiver, new IntentFilter("finish"));
-
-        // TODO: get garage  from database
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        Date startdate = null;
-        Date enddate = null;
-        try {
-            startdate = format.parse("2019-03-20T12:30Z");
-            enddate = format.parse("2019-03-22T12:30Z");
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        reservationArrayList.add(new Reservation("119 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.4));
-        reservationArrayList.add(new Reservation("101 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.5));
-        reservationArrayList.add(new Reservation("89 rue des maraichers, Villebon-sur-Yvette, France", startdate, enddate, "bla", 2.6));
-        reservationArrayList.add(new Reservation("Paris, Paris, France", startdate, enddate, "bla", 2.7));
-
-        // set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.listView2);
-        LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerView.setLayoutManager(horizontalLayoutManager);
-
-        // set up horizontal list
-        MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, reservationArrayList);
-        adapter2.setClickListener((view, position) -> {
-            Reservation reservationClicked = adapter2.getItem(position);
-            //view.findViewById(R.id.parent).setBackgroundColor(getColor(R.color.myOrange));
-            view.findViewById(R.id.iv_navigate).setOnClickListener(v -> {
-                //recyclerView.setVisibility(View.GONE);
-                postDirectionRequestFromLatLong(getLatLongFromAddressString(getApplicationContext(), reservationClicked.getCompleteAddress()));
-            });
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),reservationClicked.getCompleteAddress())));
-            Toast.makeText(this, reservationClicked.getAddress(), Toast.LENGTH_SHORT).show();
-        });
-        recyclerView.setAdapter(adapter2);
     }
+
+    @Override
+    public void onBackPressed() {
+        // 5 - Handle back click to close menu
+        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void configureDrawerLayout(){
+        this.drawerLayout = findViewById(R.id.activity_main_drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+    }
+
+    private void configureNavigationView(){
+        this.navigationView = findViewById(R.id.activity_main_nav_view);
+        navigationView.setNavigationItemSelectedListener(menuItem -> {
+            int id = menuItem.getItemId();
+
+            switch (id){
+                case R.id.activity_main_drawer_map :
+                    break;
+                case R.id.activity_main_drawer_profile:
+                    Intent profile = new Intent(MainActivity.this, ProfileActivity.class);
+                    startActivityForResult(profile, PROFILEACTIVITY_REQUEST);
+                    break;
+                case R.id.activity_main_drawer_settings:
+                    break;
+                case R.id.activity_main_drawer_garages:
+                    Intent garageIntent = new Intent(MainActivity.this, GarageActivity.class);
+                    startActivityForResult(garageIntent, PROFILEACTIVITY_REQUEST);
+                    break;
+                case R.id.activity_main_drawer_overview:
+                    break;
+                case R.id.activity_main_drawer_chats:
+                    if (this.isCurrentUserLogged()){
+                        this.startVendorChatActivity();
+                    } else {
+                        Toast.makeText(this, getString(R.string.error_not_connected), Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+    }
+
 
     @Override
     public int getFragmentLayout() { return R.layout.activity_profile; }
