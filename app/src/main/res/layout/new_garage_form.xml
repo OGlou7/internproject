@@ -165,5 +165,17 @@
             android:layout_marginBottom="@dimen/baseMargin"
             />
 
+        <TextView
+            android:id="@+id/tv_address_invalid"
+            android:layout_below="@+id/b_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/invalid_address"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:textColor="@color/quantum_error_light"
+            android:textSize="@dimen/largeText"
+            android:visibility="gone"/>
+
     </RelativeLayout>
 </ScrollView>

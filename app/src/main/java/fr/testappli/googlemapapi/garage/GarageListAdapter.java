@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,13 +41,16 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
 
     private final OnItemClickListener onItemClickListener;
     private final OnItemLongClickListener onItemLongClickListener;
-    private final OnClickListener onClickListener;
+    private final OnClickListener onMoreClickListener;
+    private final OnClickListener onCheckClickListener;
 
-    public GarageListAdapter(@NonNull FirestoreRecyclerOptions<Garage> options, OnItemClickListener onItemClickListener, OnItemLongClickListener onItemLongClickListener, OnClickListener onClickListener) {
+    public GarageListAdapter(@NonNull FirestoreRecyclerOptions<Garage> options, OnItemClickListener onItemClickListener,
+                             OnItemLongClickListener onItemLongClickListener, OnClickListener onMoreClickListener, OnClickListener onCheckClickListener) {
         super(options);
         this.onItemClickListener = onItemClickListener;
         this.onItemLongClickListener = onItemLongClickListener;
-        this.onClickListener = onClickListener;
+        this.onMoreClickListener = onMoreClickListener;
+        this.onCheckClickListener = onCheckClickListener;
     }
 
     @Override
@@ -58,7 +62,9 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
             onItemLongClickListener.onItemLongClick(model);
             return true;
         });
-        holder.iv_garage_row_more.setOnClickListener(v -> onClickListener.onClickListener(holder.itemView, model));
+        holder.iv_garage_row_more.setOnClickListener(v -> onMoreClickListener.onClickListener(holder.itemView, model));
+        holder.cb_row_garage_is_reserved.setChecked(model.getisAvailable());
+        holder.cb_row_garage_is_reserved.setOnClickListener(v -> onCheckClickListener.onClickListener(holder.itemView, model));
     }
 
     @NonNull
@@ -74,6 +80,7 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
         TextView tv_row_garage_address;
         TextView tv_row_description;
         ImageView iv_garage_row_more;
+        CheckBox cb_row_garage_is_reserved;
 
         public GarageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -81,6 +88,7 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
             tv_row_garage_address = itemView.findViewById(R.id.tv_row_garage_address);
             tv_row_description = itemView.findViewById(R.id.tv_row_description);
             iv_garage_row_more = itemView.findViewById(R.id.iv_garage_row_more);
+            cb_row_garage_is_reserved = itemView.findViewById(R.id.cb_row_garage_is_reserved);
         }
     }
 }

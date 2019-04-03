@@ -1,17 +1,15 @@
 package fr.testappli.googlemapapi;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -24,6 +22,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +31,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.Status;
@@ -49,34 +50,26 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import fr.testappli.googlemapapi.api.GarageHelper;
+import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.auth.ProfileActivity;
 import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.garage.GarageActivity;
+import fr.testappli.googlemapapi.models.Garage;
+import fr.testappli.googlemapapi.models.User;
 import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
 
 public class MainActivity extends BaseActivity implements OnMapReadyCallback {
@@ -93,15 +86,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     private boolean firstTimeFlag = true;
     private AutocompleteSupportFragment autocompleteFragment;
 
-    private ImageView img_maneuver;
-    private TextView tv_maneuver;
-
-    private JSONArray legs;
-    private JSONArray steps;
-    private ArrayList<String> maneuver = new ArrayList<>();
-    private ArrayList<String> html_instructions = new ArrayList<>();
-
-    private ArrayList<Reservation> reservationArrayList = new ArrayList<>();
 
     private  BroadcastReceiver broadcastReceiver;
 
@@ -114,24 +98,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     public final static int CALENDARACTIVITY_REQUEST = 1;
     public final static int PROFILEACTIVITY_REQUEST = 2;
 
+    private User modelCurrentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
 
-        // Maneuvers Display and controls
-        tv_maneuver = findViewById(R.id.tv_manouver);
-        img_maneuver = findViewById(R.id.im_manouver);
-        tv_maneuver.setVisibility(View.GONE);
-        img_maneuver.setVisibility(View.GONE);
-
-        // Handle configuration
+        getCurrentUserFromFirestore();
         configureToolbar();
         configureDrawerLayout();
         configureNavigationView();
-
-        // Handle map configuration
         configureMap();
 
         // Handle receiver to finish activity
@@ -145,23 +122,58 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             }
         };
         registerReceiver(broadcastReceiver, new IntentFilter("finish"));
+    }
 
-        // TODO: get garage  from database
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        Date startdate = null;
-        Date enddate = null;
-        try {
-            startdate = format.parse("2019-03-20T12:30Z");
-            enddate = format.parse("2019-03-22T12:30Z");
-        } catch (ParseException e) {
-            e.printStackTrace();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        configureMapPointers();
+        if (isGooglePlayServicesAvailable()) {
+            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            startCurrentLocationUpdates();
         }
-        reservationArrayList.add(new Reservation("119 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.4));
-        reservationArrayList.add(new Reservation("101 Chemin de la hunière, Palaiseau, France", startdate, enddate, "bla", 2.5));
-        reservationArrayList.add(new Reservation("89 rue des maraichers, Villebon-sur-Yvette, France", startdate, enddate, "bla", 2.6));
-        reservationArrayList.add(new Reservation("Paris, Paris, France", startdate, enddate, "bla", 2.7));
+    }
+        
+    // CONFIGURATION
 
-        configureListRecylcerView();
+    void configureMapPointers(){
+        // Get All Users
+        UserHelper.getUsersCollection().get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            User user = document.toObject(User.class);
+                            Log.e("testtestUSER", user.getUsername());
+                            displayAllAvailableGaragesForUser(user.getUid());
+                        }
+                    } else {
+                        Log.e("testtest", "Error getting documents: ", task.getException());
+                    }
+                });
+    }
+
+    void displayAllAvailableGaragesForUser(String user_uid){
+        // Get All Garages
+        ArrayList<Garage> garageArrayList = new ArrayList<>();
+        GarageHelper.getAllGarageForUser(user_uid).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            Garage garage = document.toObject(Garage.class);
+                            if(garage.getisAvailable()) {
+                                Log.e("testtestGARAGE", garage.getAddress());
+                                garageArrayList.add(garage);
+                            }
+                        }
+                    } else {
+                        Log.d("testtest", "Error getting documents: ", task.getException());
+                    }
+                    configureListRecyclerView(garageArrayList);
+                    ArrayList<String> addressList = new ArrayList<>();
+                    for(Garage garage : garageArrayList)
+                        addressList.add(garage.getAddress());
+                    setAddressMarkers(addressList);
+                });
     }
 
     void configureToolbar(){
@@ -170,24 +182,28 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
     }
 
-    void configureListRecylcerView(){
+    void configureListRecyclerView(ArrayList<Garage> garageArrayList){
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.listView2);
         LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(horizontalLayoutManager);
 
         // set up horizontal list
-        MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, reservationArrayList);
+        MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, garageArrayList);
         adapter2.setClickListener((view, position) -> {
-            Reservation reservationClicked = adapter2.getItem(position);
-            //view.findViewById(R.id.parent).setBackgroundColor(getColor(R.color.myOrange));
-            view.findViewById(R.id.iv_navigate).setOnClickListener(v -> {
-                //recyclerView.setVisibility(View.GONE);
-                postDirectionRequestFromLatLong(getLatLongFromAddressString(getApplicationContext(), reservationClicked.getCompleteAddress()));
-            });
+            Garage garageClicked = adapter2.getItem(position);
             googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),reservationClicked.getCompleteAddress())));
-            Toast.makeText(this, reservationClicked.getAddress(), Toast.LENGTH_SHORT).show();
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),garageClicked.getAddress())));
+            Toast.makeText(this, garageClicked.getAddress(), Toast.LENGTH_SHORT).show();
+        });
+
+        adapter2.setNavigationClickListener((view, position) -> {
+            Garage garageClicked = adapter2.getItem(position);
+            String url = "http://maps.google.com/maps?saddr=" +
+                    currentLocation.getLatitude() + "," + currentLocation.getLongitude() + "&daddr=" +
+                    garageClicked.getAddress().replace(" ", "+");
+            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
         });
         recyclerView.setAdapter(adapter2);
     }
@@ -210,7 +226,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         assert autocompleteFragment != null;
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
 
-        Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
+        //Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -240,25 +256,54 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
-    @Override
-    public void onBackPressed() {
-        // 5 - Handle back click to close menu
-        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            this.drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
     private void configureDrawerLayout(){
         this.drawerLayout = findViewById(R.id.activity_main_drawer_layout);
+        drawerLayout.addDrawerListener(
+                new DrawerLayout.DrawerListener() {
+                    @Override
+                    public void onDrawerSlide(View drawerView, float slideOffset) {
+                        // Respond when the drawer's position changes
+                    }
+                    @Override
+                    public void onDrawerOpened(View drawerView) {
+                        // Respond when the drawer is opened
+                    }
+                    @Override
+                    public void onDrawerClosed(View drawerView) {
+                        // Respond when the drawer is closed
+                    }
+                    @Override
+                    public void onDrawerStateChanged(int newState) {
+                        if(newState>0)
+                            setOwnerPartVisibleDrawer();
+                        // Respond when the drawer motion state changes
+                    }
+                }
+        );
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
     }
 
+    void setOwnerPartVisibleDrawer(){
+        navigationView.getMenu().findItem(R.id.activity_main_drawer_owner_part).setVisible((Objects.requireNonNull(modelCurrentUser).getIsVendor()));
+
+        ImageView iv_profile_image = findViewById(R.id.iv_profile_image);
+        //iv_profile_image.setImageURI(getCurrentUser().getPhotoUrl());
+
+        Glide.with(this)
+                .load(getCurrentUser().getPhotoUrl())
+                .apply(RequestOptions.circleCropTransform())
+                .into(iv_profile_image);
+
+        TextView tv_username = findViewById(R.id.tv_username);
+        tv_username.setText(modelCurrentUser.getUsername());
+    }
+
     private void configureNavigationView(){
         this.navigationView = findViewById(R.id.activity_main_nav_view);
+
         navigationView.setNavigationItemSelectedListener(menuItem -> {
             int id = menuItem.getItemId();
 
@@ -292,32 +337,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
+    // Get Current User from Firestore
+    private void getCurrentUserFromFirestore(){
+        UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> modelCurrentUser = documentSnapshot.toObject(User.class));
+    }
 
     @Override
     public int getFragmentLayout() { return R.layout.activity_profile; }
 
-    public void postDirectionRequestFromLatLong(LatLng latLng){
-        String url = "https://maps.googleapis.com/maps/api/directions/json?&origin=" +
-                currentLocation.getLatitude() + "," + currentLocation.getLongitude() + "&destination=" +
-                latLng.latitude + "," + latLng.longitude + "&travelmode=driving" +
-                "&key=" + getString(R.string.google_maps_key);
-        Log.d("onMapClick", url);
-
-        // Start downloading json data from Google Directions API
-        FetchUrl FetchUrl = new FetchUrl();
-        FetchUrl.execute(url);
-        //move map camera
-        googleMap.clear();
-        setAddressMarkers();
-        googleMap.addMarker(new MarkerOptions().position(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()))
-                .title("Your Position")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),currentAddress.getAddressLine(0))));
-    }
-
-
+    // UTILS
+    
     // Method to get address from latitude and longitude
     public static LatLng getLatLongFromAddressString(Context context, String address) {
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());
@@ -337,10 +366,9 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         return null;
     }
 
-
-    public void setAddressMarkers(){
+    public void setAddressMarkers(ArrayList<String> addressMarkersAddress){
         // Setting the position of the marker
-        String[] registeredAddresses = getResources().getStringArray(R.array.Address_client);
+        String[] registeredAddresses = addressMarkersAddress.toArray(new String[0]);
 
         for (String registeredAddresse : registeredAddresses){
             String address = registeredAddresse.split(";")[0];
@@ -350,6 +378,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                         .title(address)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
             }
+        }
+    }
+    
+    
+    @Override
+    public void onBackPressed() {
+        // close navigationDrawer
+        if (this.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -400,207 +439,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
-        setAddressMarkers();
+        //setAddressMarkers();
 
         this.googleMap.setOnMarkerClickListener(marker -> {
             if(marker.getTitle() != null && !marker.getTitle().equals("Your Position"))
-                postDirectionRequestFromLatLong(getLatLongFromAddressString(getApplicationContext(), marker.getTitle()));
+                //TODO: AFFICHER LES DETAIL DU GARAGE ICI
+                Log.e("TESTTEST444", marker.getTitle());
             return false;
         });
     }
-
-
-
-    @SuppressLint("StaticFieldLeak")
-    private class FetchUrl extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... url) {
-
-            // For storing data from web service
-            String data = "";
-
-            try {
-                // Fetching the data from web service
-                data = downloadUrl(url[0]);
-                Log.d("Background Task data", data);
-            } catch (Exception e) {
-                Log.d("Background Task", e.toString());
-            }
-            return data;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
-
-        }
-
-        private String downloadUrl(String strUrl) throws IOException {
-            String data = "";
-            InputStream iStream = null;
-            HttpURLConnection urlConnection = null;
-            try {
-                URL url = new URL(strUrl);
-
-                // Creating an http connection to communicate with url
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                // Connecting to url
-                urlConnection.connect();
-
-                // Reading data from url
-                iStream = urlConnection.getInputStream();
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-                StringBuilder sb = new StringBuilder();
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                data = sb.toString();
-                Log.d("downloadUrl", data);
-                br.close();
-
-            } catch (Exception e) {
-                Log.d("Exception", e.toString());
-            } finally {
-                assert iStream != null;
-                iStream.close();
-                urlConnection.disconnect();
-            }
-            return data;
-        }
-    }
-
-
-
-//    @SuppressLint("StaticFieldLeak")
-//    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-//        ImageView bmImage;
-//
-//        // CONSTRUCTOR
-//        DownloadImageTask(ImageView bmImage) {
-//            this.bmImage = bmImage;
-//        }
-//
-//        // DO IN BACKGROUND
-//        protected Bitmap doInBackground(String... urls) {
-//            String urldisplay = urls[0];
-//            Bitmap mIcon11 = null;
-//            try {
-//                InputStream in = new java.net.URL(urldisplay).openStream();
-//                mIcon11 = BitmapFactory.decodeStream(in);
-//            } catch (Exception e) {
-//                Log.e("Error", e.getMessage());
-//                e.printStackTrace();
-//            }
-//            return mIcon11;
-//        }
-//
-//        // ON POST-EXECUTE
-//        protected void onPostExecute(Bitmap result) {
-//            bmImage.setImageBitmap(result);
-//        }
-//    }
-
-
-
-
-
-    @SuppressLint("StaticFieldLeak")
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0]);
-                DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
-
-                // Starts parsing data
-                MapResult mapResult = new MapResult(parser.parse(jObject));
-                //routes = parser.parse(jObject);
-
-                routes = mapResult.getRoutes();
-                legs = mapResult.getLegs();
-                steps = mapResult.getSteps();
-                maneuver = mapResult.getManeuver();
-
-                for(int i=0;i<steps.length();i++)
-                    html_instructions.add(( (JSONObject)steps.get(i)).getString("html_instructions"));
-
-                Log.e("TESTTEST10", html_instructions.toString());
-
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
-
-            } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
-                e.printStackTrace();
-            }
-            return routes;
-        }
-
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
-
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
-
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
-
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-
-                    double lat = Double.parseDouble(Objects.requireNonNull(point.get("lat")));
-                    double lng = Double.parseDouble(Objects.requireNonNull(point.get("lng")));
-                    LatLng position = new LatLng(lat, lng);
-
-                    points.add(position);
-                }
-
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(Color.RED);
-
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
-            }
-
-            // Drawing polyline in the Google Map for the i-th route
-            if(lineOptions != null) {
-                //googleMap.clear();
-                googleMap.addPolyline(lineOptions);
-            }
-            else {
-                Log.d("onPostExecute","without Polylines drawn");
-            }
-        }
-    }
-
 
     // Update current position every 3 seconds
     private void startCurrentLocationUpdates() {
@@ -739,15 +586,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         super.onStop();
         if (fusedLocationProviderClient != null)
             fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (isGooglePlayServicesAvailable()) {
-            fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            startCurrentLocationUpdates();
-        }
     }
 
     @Override

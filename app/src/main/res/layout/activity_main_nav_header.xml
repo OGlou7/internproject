@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="176dp"
-    android:background="#B2B9E1"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:background="@color/myRed"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/iv_application_icon"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/ic_action_refresh" />
+        android:layout_margin="@dimen/baseMargin"
+        app:srcCompat="@android:drawable/ic_menu_gallery" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/tv_username"
+        android:layout_toEndOf="@+id/iv_profile_image"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/largeText"
+        android:layout_margin="@dimen/baseMargin"
+        android:text="test"/>
+
+    <ImageView
+        android:id="@+id/iv_profile_image"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/baseMargin"
+        android:src="@android:drawable/sym_def_app_icon" />
+
+
+</RelativeLayout>

@@ -1,7 +1,11 @@
 package fr.testappli.googlemapapi.auth;
 
+import android.Manifest;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -10,26 +14,39 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.Objects;
+import java.util.UUID;
 
+import butterknife.OnClick;
 import fr.testappli.googlemapapi.R;
+import fr.testappli.googlemapapi.api.MessageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.models.User;
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
 public class ProfileActivity extends BaseActivity {
 
     private TextInputEditText textInputEditTextUsername;
-    private TextView textViewEmail;
+    private TextView TextViewEmail;
+    private EditText EditTextViewImmmatriculation;
     private ImageView imageViewProfile;
     private ProgressBar progressBar;
     private CheckBox checkBoxIsVendor;
@@ -38,21 +55,34 @@ public class ProfileActivity extends BaseActivity {
     private static final int DELETE_USER_TASK = 20;
     private static final int UPDATE_USERNAME = 30;
 
+    // FOR PICTURES
+    private static final String PERMS = Manifest.permission.READ_EXTERNAL_STORAGE;
+    private static final int RC_IMAGE_PERMS = 100;
+    private Uri uriImageSelected;
+    private static final int RC_CHOOSE_PHOTO = 200;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //FOR DESIGN
         imageViewProfile = findViewById(R.id.profile_activity_imageview_profile);
         textInputEditTextUsername = findViewById(R.id.profile_activity_edit_text_username);
-        textViewEmail = findViewById(R.id.profile_activity_text_view_email);
+        TextViewEmail = findViewById(R.id.profile_activity_text_view_email);
+        EditTextViewImmmatriculation = findViewById(R.id.profile_activity_text_view_immatriculation);
         progressBar = findViewById(R.id.profile_activity_progress_bar);
         checkBoxIsVendor = findViewById(R.id.profile_activity_check_box_is_vendor);
         Button update = findViewById(R.id.profile_activity_button_update);
         Button signOut = findViewById(R.id.profile_activity_button_sign_out);
         Button delete = findViewById(R.id.profile_activity_button_delete);
 
+        imageViewProfile.setOnClickListener(v -> {
+            onClickAddFile();
+        });
         checkBoxIsVendor.setOnClickListener(v -> this.updateUserIsVendor());
-        update.setOnClickListener(v -> this.updateUsernameInFirebase());
+        update.setOnClickListener(v -> {
+            this.updateUsernameInFirebase();
+            this.updateUserImmatriculationInFirebase();
+        });
         signOut.setOnClickListener(v -> this.signOutUserFromFirebase());
         delete.setOnClickListener(v -> new AlertDialog.Builder(this)
                 .setMessage(R.string.popup_message_confirmation_delete_account)
@@ -73,7 +103,7 @@ public class ProfileActivity extends BaseActivity {
         this.updateUIWhenCreating();
     }
 
-    // Update User Username
+    // Update
     private void updateUsernameInFirebase(){
         this.progressBar.setVisibility(View.VISIBLE);
         String username = Objects.requireNonNull(this.textInputEditTextUsername.getText()).toString();
@@ -88,6 +118,12 @@ public class ProfileActivity extends BaseActivity {
     private void updateUserIsVendor(){
         if (this.getCurrentUser() != null) {
             UserHelper.updateIsVendor(this.getCurrentUser().getUid(), this.checkBoxIsVendor.isChecked()).addOnFailureListener(this.onFailureListener());
+        }
+    }
+
+    private void updateUserImmatriculationInFirebase(){
+        if (this.getCurrentUser() != null) {
+            UserHelper.updateImmatriculation(this.getCurrentUser().getUid(), this.EditTextViewImmmatriculation.getText().toString()).addOnFailureListener(this.onFailureListener());
         }
     }
 
@@ -146,21 +182,102 @@ public class ProfileActivity extends BaseActivity {
 
             //Get email & username from Firebase
             String email = TextUtils.isEmpty(this.getCurrentUser().getEmail()) ? getString(R.string.info_no_email_found) : this.getCurrentUser().getEmail();
-            //String username = TextUtils.isEmpty(this.getCurrentUser().getDisplayName()) ? getString(R.string.info_no_username_found) : this.getCurrentUser().getDisplayName();
-
-            //Update views with data
-            //this.textInputEditTextUsername.setText(username);
-            this.textViewEmail.setText(email);
+            this.TextViewEmail.setText(email);
 
             // Get additional data from Firestore (isVendor & Username)
             UserHelper.getUser(this.getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> {
                 User currentUser = documentSnapshot.toObject(User.class);
                 String username1 = TextUtils.isEmpty(Objects.requireNonNull(currentUser).getUsername()) ? getString(R.string.info_no_username_found) : currentUser.getUsername();
+                String immatriculation = currentUser.getImmatriculation();
                 checkBoxIsVendor.setChecked(currentUser.getIsVendor());
                 textInputEditTextUsername.setText(username1);
+                EditTextViewImmmatriculation.setText(immatriculation);
+
             });
         }
     }
+
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // Calling the appropriate method after activity result
+        this.handleResponse(requestCode, resultCode, data);
+    }
+
+
+    @AfterPermissionGranted(RC_IMAGE_PERMS)
+    public void onClickAddFile() { this.chooseImageFromPhone(); }
+
+
+    // --------------------
+    // REST REQUESTS
+    // --------------------
+    private void chooseImageFromPhone(){
+        if (!EasyPermissions.hasPermissions(this, PERMS)) {
+            EasyPermissions.requestPermissions(this, getString(R.string.popup_title_permission_files_access), RC_IMAGE_PERMS, PERMS);
+            return;
+        }
+        Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(i, RC_CHOOSE_PHOTO);
+    }
+
+    private void handleResponse(int requestCode, int resultCode, Intent data){
+        if (requestCode == RC_CHOOSE_PHOTO) {
+            if (resultCode == RESULT_OK) {
+                this.uriImageSelected = data.getData();
+                Glide.with(this)
+                        .load(this.uriImageSelected)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(this.imageViewProfile);
+
+
+                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setPhotoUri(this.uriImageSelected)
+                        .build();
+
+                getCurrentUser().updateProfile(profileUpdates)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Log.e("TESTTEST456794587", "User profile updated.");
+                            }
+                        });
+                uploadPhotoInFirebase();
+            }
+        } else {
+            Toast.makeText(this, getString(R.string.toast_title_no_image_chosen), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void uploadPhotoInFirebase() {
+        String uuid = UUID.randomUUID().toString();
+
+        StorageReference mImageRef = FirebaseStorage.getInstance().getReference(uuid);
+        mImageRef.putFile(this.uriImageSelected)
+                .addOnSuccessListener(this, taskSnapshot -> {
+                    Task<Uri> firebaseUri = taskSnapshot.getStorage().getDownloadUrl();
+                    firebaseUri.addOnSuccessListener(uri -> {
+                        UserHelper.updatePhotoURI(getCurrentUser().getUid(), uri.toString());
+                    });
+
+                })
+                .addOnFailureListener(this.onFailureListener());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     public int getFragmentLayout() { return R.layout.activity_profile; }

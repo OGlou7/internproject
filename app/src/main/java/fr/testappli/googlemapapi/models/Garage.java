@@ -18,7 +18,7 @@ public class Garage implements java.io.Serializable{
     @Nullable
     private String description;
     private double price;
-    private boolean isReserved;
+    private boolean isAvailable;
 
     public Garage() { }
 
@@ -27,7 +27,7 @@ public class Garage implements java.io.Serializable{
         this.address = garage.getAddress();
         this.description = garage.getDescription();
         this.price = garage.getPrice();
-        this.isReserved = garage.getIsReserved();
+        this.isAvailable = garage.getisAvailable();
     }
 
     public Garage(String uid, String address, @Nullable String description, double price) {
@@ -35,8 +35,7 @@ public class Garage implements java.io.Serializable{
         this.address = address;
         this.description = description;
         this.price = price;
-        this.isReserved = false;
-        //this.listDateNonDispo = new ArrayList<>();
+        this.isAvailable = false;
     }
 
     // --- GETTERS ---
@@ -44,12 +43,12 @@ public class Garage implements java.io.Serializable{
     public String getAddress() { return address; }
     public @Nullable String getDescription() { return description; }
     public double getPrice() { return price; }
-    public boolean getIsReserved() { return isReserved; }
+    public boolean getisAvailable() { return isAvailable; }
 
     // --- SETTERS ---
     public void setUid(String uid) { this.uid = uid; }
     public void setAddress(String address) { this.address = address; }
     public void setDescription(@Nullable String description) { this.description = description; }
     public void setPrice(double price) { this.price = price; }
-    public void setReserved(boolean isReserved) { this.isReserved = isReserved; }
+    public void setReserved(boolean isAvailable) { this.isAvailable = isAvailable; }
 }

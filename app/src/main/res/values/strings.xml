@@ -14,13 +14,11 @@
 
     <string name="user_location_permission_explanation">This app needs location permissions in order to show its functionality.</string>
     <string name="user_location_permission_not_granted">You didn\'t grant location permissions.</string>
-    <string name="prev">Options</string>
-    <string name="next">Test</string>
     <string name="no_maneuver_narrative">No maneuver narrative</string>
     <string name="arrive_destination">You have arrived at your destination!</string>
+
+    <!-- CALENDAR ACTIVITY -->
     <string name="calendar_title">Calendar</string>
-
-
     <string name="current_date">June, 2016</string>
     <string name="add_event">ADD CALENDAR EVENT</string>
     <string name="sun">DIM</string>
@@ -84,8 +82,9 @@
 
     <!-- GARAGE ACTIVITY -->
     <string name="popup_message_confirmation_delete_garage">Es-tu sûr(e) de vouloir supprimer ce garage ?</string>
+    <string name="invalid_address">Address not found !</string>
 
-    <!-- Used in NavigationDrawer -->
+    <!-- NAVIGATIONDRAWER -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

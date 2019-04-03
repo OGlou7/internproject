@@ -5,11 +5,11 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -17,47 +17,40 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
 
-import java.lang.reflect.Field;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 import fr.testappli.googlemapapi.CalendarActivity;
-import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.GarageHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.models.Garage;
-import fr.testappli.googlemapapi.models.NonAvailableTime;
-import fr.testappli.googlemapapi.week.WeekViewEvent;
-
-import static fr.testappli.googlemapapi.week.WeekActivity.dateToCalendar;
 
 public class GarageActivity extends BaseActivity {
-    private static final String TAG = "GarageActivityLog";
-    private PopupWindow mPopupWindow;
-    private RelativeLayout mRelativeLayout;
     public final static int CALENDARACTIVITY_REQUEST = 1;
 
-
     // FOR DESIGN
-    RecyclerView recyclerView;
+    private RecyclerView recyclerView;
+    private PopupWindow mPopupWindow;
+    private RelativeLayout mRelativeLayout;
+
 
     // FOR DATA
     private GarageListAdapter garageListAdapter;
@@ -88,13 +81,13 @@ public class GarageActivity extends BaseActivity {
         // setup the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setOnClickListener(v -> this.addGarage());
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        this.configureRecyclerView(getCurrentUser().getUid());
+        this.configureRecyclerView(Objects.requireNonNull(getCurrentUser()).getUid());
     }
 
     @Override
@@ -125,6 +118,8 @@ public class GarageActivity extends BaseActivity {
         EditText et_city = customView.findViewById(R.id.et_city);
         EditText et_price = customView.findViewById(R.id.et_price);
 
+        TextView tv_address_invalid = customView.findViewById(R.id.tv_address_invalid);
+
         Button b_register = customView.findViewById(R.id.b_register);
         b_register.setOnClickListener(view -> {
             if(et_address.getText().toString().isEmpty()) {
@@ -148,13 +143,14 @@ public class GarageActivity extends BaseActivity {
             }
 
             String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
-//            String uri = "geo:0,0?q=" + completeAddress.replace(" ","+");
-//            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
-//            intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-//            startActivity(intent);
 
-            createGarageInFirestore(completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
-            mPopupWindow.dismiss();
+            if(isAddressCorrect(completeAddress)){
+                createGarageInFirestore(completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
+                mPopupWindow.dismiss();
+            }
+            else {
+                tv_address_invalid.setVisibility(View.VISIBLE);
+            }
         });
 
 
@@ -186,6 +182,7 @@ public class GarageActivity extends BaseActivity {
         EditText et_country = customView.findViewById(R.id.et_country);
         EditText et_city = customView.findViewById(R.id.et_city);
         EditText et_price = customView.findViewById(R.id.et_price);
+        TextView tv_address_invalid = customView.findViewById(R.id.tv_address_invalid);
 
         et_description.setText(garage.getDescription());
         et_address.setText(garage.getAddress().split(",")[0]);
@@ -216,8 +213,14 @@ public class GarageActivity extends BaseActivity {
             }
 
             String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
-            updateGarageInFirestore(garage.getUid(), completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
-            mPopupWindow.dismiss();
+
+            if(isAddressCorrect(completeAddress)){
+                updateGarageInFirestore(garage.getUid(), completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
+                mPopupWindow.dismiss();
+            }
+            else {
+                tv_address_invalid.setVisibility(View.VISIBLE);
+            }
         });
 
 
@@ -230,14 +233,32 @@ public class GarageActivity extends BaseActivity {
 
     }
 
+    public boolean isAddressCorrect(String address){
+        Geocoder geoCoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+        try {
+            List<Address> addresses = geoCoder.getFromLocationName(address, 2);
+
+            if (!addresses.isEmpty()) {
+                for(Address address1 : addresses)
+                    Log.e("TESTTEST123", address1.getAddressLine(0));
+                return true;
+            }else{
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // REST REQUEST
     private void createGarageInFirestore(String address, @Nullable String description, double price){
         String uuid = UUID.randomUUID().toString();
-        GarageHelper.createGarageForUser(getCurrentUser().getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
+        GarageHelper.createGarageForUser(Objects.requireNonNull(getCurrentUser()).getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
     }
 
     private void updateGarageInFirestore(String garageID, String address,String description,double price){
-        GarageHelper.updateAddress(getCurrentUser().getUid(), garageID, address);
+        GarageHelper.updateAddress(Objects.requireNonNull(getCurrentUser()).getUid(), garageID, address);
         GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
         GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);
     }
@@ -254,13 +275,11 @@ public class GarageActivity extends BaseActivity {
                 startActivityForResult(calendarActivity, CALENDARACTIVITY_REQUEST);
             },
             // OnItemLongClickListener
-            item -> {
-                        new AlertDialog.Builder(this)
-                            .setMessage(R.string.popup_message_confirmation_delete_garage)
-                            .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(getCurrentUser().getUid(), item.getUid()))
-                            .setNegativeButton(R.string.popup_message_choice_no, null)
-                            .show();
-            },
+            item -> new AlertDialog.Builder(this)
+                        .setMessage(R.string.popup_message_confirmation_delete_garage)
+                        .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(Objects.requireNonNull(getCurrentUser()).getUid(), item.getUid()))
+                        .setNegativeButton(R.string.popup_message_choice_no, null)
+                        .show(),
             // OnMoreImageClickListener
             (v, g) -> {
                 PopupMenu popup = new PopupMenu(v.getContext(), v);
@@ -272,7 +291,7 @@ public class GarageActivity extends BaseActivity {
                         case R.id.action_delete_garage:
                             new AlertDialog.Builder(this)
                                     .setMessage(R.string.popup_message_confirmation_delete_garage)
-                                    .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(getCurrentUser().getUid(), g.getUid()))
+                                    .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(Objects.requireNonNull(getCurrentUser()).getUid(), g.getUid()))
                                     .setNegativeButton(R.string.popup_message_choice_no, null)
                                     .show();
                             return true;
@@ -283,7 +302,9 @@ public class GarageActivity extends BaseActivity {
                 popup.inflate(R.menu.menu_garage_clicked);
                 popup.setGravity(Gravity.RIGHT);
                 popup.show();
-            }
+            },
+            // onCheckClickListener
+            (v, g) -> GarageHelper.updateisAvailable(Objects.requireNonNull(getCurrentUser()).getUid(), g.getUid(), ((CheckBox)v.findViewById(R.id.cb_row_garage_is_reserved)).isChecked())
         );
 
         garageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {

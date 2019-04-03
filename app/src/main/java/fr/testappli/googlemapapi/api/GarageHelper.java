@@ -41,18 +41,12 @@ public class GarageHelper {
                 .limit(50);
     }
 
-    public static Task<DocumentSnapshot> getGarageForUser(String userID, String garageID){
-        return GarageHelper.getGaragesCollection(userID)
-                .document(garageID)
-                .get();
-    }
-
     // --- UPDATE ---
 
-    public static Task<Void> updateIsReserved(String userID, String garageID, Boolean isReserved) {
+    public static Task<Void> updateisAvailable(String userID, String garageID, Boolean isAvailable) {
         return GarageHelper.getGaragesCollection(userID)
                 .document(garageID)
-                .update("isReserved", isReserved);
+                .update("isAvailable", isAvailable);
     }
 
     public static Task<Void> updateAddress(String userID, String garageID, String address) {
@@ -79,23 +73,5 @@ public class GarageHelper {
         return GarageHelper.getGaragesCollection(userID)
                 .document(garageID)
                 .delete();
-    }
-
-    public static Task<Void> deleteDateNonDispo(String userID, String garageID, NonAvailableTime nonAvailableTime) {
-        return GarageHelper.getGaragesCollection(userID)
-                .document(garageID)
-                .update("listDateNonDispo", FieldValue.arrayRemove(nonAvailableTime));
-                /*.get().addOnSuccessListener(documentSnapshot -> {
-                    Log.e("TESTTEST1", nonAvailableTime.getStartTime().toString() + " "
-                            + nonAvailableTime.getEndTime().toString() + " "
-                            + nonAvailableTime.getLocation() +" "
-                            +nonAvailableTime.getColor()+" "
-                            +nonAvailableTime.getName());
-                    Garage garage = documentSnapshot.toObject(Garage.class);
-                    Objects.requireNonNull(garage).getListDateNonDispo().remove(nonAvailableTime);
-                    GarageHelper.getGaragesCollection(userID)
-                        .document(garageID)
-                        .set(garage);
-        });*/
     }
 }

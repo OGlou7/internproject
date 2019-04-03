@@ -10,6 +10,9 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -48,6 +51,14 @@ public class UserHelper {
 
     public static Task<Void> updateIsVendor(String uid, Boolean isVendor) {
         return UserHelper.getUsersCollection().document(uid).update("isVendor", isVendor);
+    }
+
+    public static Task<Void> updateImmatriculation(String uid, String immatriculation) {
+        return UserHelper.getUsersCollection().document(uid).update("immatriculation", immatriculation);
+    }
+
+    public static Task<Void> updatePhotoURI(String uid, String urlPicture) {
+        return UserHelper.getUsersCollection().document(uid).update("urlPicture", urlPicture);
     }
 
     // --- DELETE ---

@@ -15,30 +15,31 @@
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/activity_main_drawer_profile"
-                    android:icon="@drawable/ic_action_refresh"
-                    android:title="Profil" />
+                    android:icon="@drawable/ic_profile"
+                    android:title="Profile" />
                 <item
                     android:id="@+id/activity_main_drawer_settings"
-                    android:icon="@drawable/ic_action_refresh"
+                    android:icon="@drawable/ic_settings"
                     android:title="Paramètres" />
             </group>
         </menu>
     </item>
 
-    <item android:title="Proprietaire">
+    <item android:id="@+id/activity_main_drawer_owner_part"
+        android:title="Proprietaire">
         <menu>
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/activity_main_drawer_garages"
-                    android:icon="@drawable/ic_action_refresh"
+                    android:icon="@drawable/ic_home_garage"
                     android:title="Garages" />
                 <item
                     android:id="@+id/activity_main_drawer_overview"
-                    android:icon="@drawable/ic_action_refresh"
+                    android:icon="@drawable/ic_calendar_24px"
                     android:title="Overview" />
                 <item
                     android:id="@+id/activity_main_drawer_chats"
-                    android:icon="@drawable/ic_action_refresh"
+                    android:icon="@drawable/ic_chat"
                     android:title="Chats" />
             </group>
         </menu>

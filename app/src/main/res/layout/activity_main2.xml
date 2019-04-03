@@ -36,29 +36,6 @@
             android:hint="@string/str_btn_find"
             />
 
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white">
-
-            <TextView
-                android:id="@+id/tv_manouver"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:textAppearance="@android:style/TextAppearance.Medium"
-                tools:ignore="RelativeOverlap" />
-
-            <ImageView
-                android:id="@+id/im_manouver"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/tv_manouver"
-                android:layout_centerVertical="true"
-                tools:ignore="ContentDescription" />
-        </RelativeLayout>
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

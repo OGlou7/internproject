@@ -11,7 +11,6 @@ public class User {
     private Boolean isVendor;
     @Nullable
     private String urlPicture;
-
     private String immatriculation;
 
     public User() { }
