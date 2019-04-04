@@ -34,16 +34,19 @@ import java.util.Objects;
 import java.util.UUID;
 
 import butterknife.OnClick;
+import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.MessageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class ProfileActivity extends BaseActivity {
 
+    private static final int PROFILEACTIVITY_REQUEST = 2;
     private TextInputEditText textInputEditTextUsername;
     private TextView TextViewEmail;
     private EditText EditTextViewImmmatriculation;
@@ -54,6 +57,8 @@ public class ProfileActivity extends BaseActivity {
     private static final int SIGN_OUT_TASK = 10;
     private static final int DELETE_USER_TASK = 20;
     private static final int UPDATE_USERNAME = 30;
+
+    private User modelCurrentUser;
 
     // FOR PICTURES
     private static final String PERMS = Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -90,6 +95,10 @@ public class ProfileActivity extends BaseActivity {
                 .setNegativeButton(R.string.popup_message_choice_no, null)
                 .show());
 
+        Intent intent = getIntent();
+        Bundle bundleModelUser = Objects.requireNonNull(intent.getExtras()).getBundle("modelCurrentUser");
+        modelCurrentUser = (User) Objects.requireNonNull(Objects.requireNonNull(bundleModelUser).getSerializable("modelCurrentUser"));
+
         //TOOLBAR
         // setup the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -98,18 +107,27 @@ public class ProfileActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        toolbar.setNavigationOnClickListener(v -> finish());
+        toolbar.setNavigationOnClickListener(v -> finishActivity());
 
         this.updateUIWhenCreating();
     }
 
-    // Update
+    private void finishActivity(){
+        Intent data = new Intent();
+        Bundle bundleModelCurrentUser = new Bundle();
+        bundleModelCurrentUser.putSerializable("modelCurrentUser", modelCurrentUser);
+        data.putExtra("modelCurrentUser", bundleModelCurrentUser);
+        setResult(PROFILEACTIVITY_REQUEST,data);
+        finish();
+    }
+
     private void updateUsernameInFirebase(){
         this.progressBar.setVisibility(View.VISIBLE);
         String username = Objects.requireNonNull(this.textInputEditTextUsername.getText()).toString();
 
         if (this.getCurrentUser() != null){
             if (!username.isEmpty() &&  !username.equals(getString(R.string.info_no_username_found))){
+                modelCurrentUser.setUsername(username);
                 UserHelper.updateUsername(username, this.getCurrentUser().getUid()).addOnFailureListener(this.onFailureListener()).addOnSuccessListener(this.updateUIAfterRESTRequestsCompleted(UPDATE_USERNAME));
             }
         }
@@ -117,12 +135,14 @@ public class ProfileActivity extends BaseActivity {
 
     private void updateUserIsVendor(){
         if (this.getCurrentUser() != null) {
+            modelCurrentUser.setIsVendor(this.checkBoxIsVendor.isChecked());
             UserHelper.updateIsVendor(this.getCurrentUser().getUid(), this.checkBoxIsVendor.isChecked()).addOnFailureListener(this.onFailureListener());
         }
     }
 
     private void updateUserImmatriculationInFirebase(){
         if (this.getCurrentUser() != null) {
+            modelCurrentUser.setImmatriculation(this.EditTextViewImmmatriculation.getText().toString());
             UserHelper.updateImmatriculation(this.getCurrentUser().getUid(), this.EditTextViewImmmatriculation.getText().toString()).addOnFailureListener(this.onFailureListener());
         }
     }
@@ -135,6 +155,7 @@ public class ProfileActivity extends BaseActivity {
         this.logOut();
     }
 
+    // DELETE
     private void deleteUserFromFirebase(){
         if (this.getCurrentUser() != null) {
             UserHelper.deleteUser(this.getCurrentUser().getUid()).addOnFailureListener(this.onFailureListener());
@@ -148,17 +169,17 @@ public class ProfileActivity extends BaseActivity {
     private void logOut(){
         Intent intent = new Intent("finish");
         sendBroadcast(intent);
-        finish();
+        finishActivity();
     }
 
     private OnSuccessListener<Void> updateUIAfterRESTRequestsCompleted(final int origin){
         return aVoid -> {
             switch (origin){
                 case SIGN_OUT_TASK:
-                    finish();
+                    finishActivity();
                     break;
                 case DELETE_USER_TASK:
-                    finish();
+                    finishActivity();
                     break;
                 case UPDATE_USERNAME:
                     progressBar.setVisibility(View.INVISIBLE);
@@ -173,9 +194,9 @@ public class ProfileActivity extends BaseActivity {
         if (this.getCurrentUser() != null){
 
             //Get picture URL from Firebase
-            if (this.getCurrentUser().getPhotoUrl() != null) {
+            if (modelCurrentUser.getUrlPicture() != null && !modelCurrentUser.getUrlPicture().isEmpty()) {
                 Glide.with(this)
-                        .load(this.getCurrentUser().getPhotoUrl())
+                        .load(Uri.parse(modelCurrentUser.getUrlPicture()))
                         .apply(RequestOptions.circleCropTransform())
                         .into(imageViewProfile);
             }
@@ -192,7 +213,6 @@ public class ProfileActivity extends BaseActivity {
                 checkBoxIsVendor.setChecked(currentUser.getIsVendor());
                 textInputEditTextUsername.setText(username1);
                 EditTextViewImmmatriculation.setText(immatriculation);
-
             });
         }
     }
@@ -240,7 +260,7 @@ public class ProfileActivity extends BaseActivity {
                 getCurrentUser().updateProfile(profileUpdates)
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Log.e("TESTTEST456794587", "User profile updated.");
+                                Log.e("handleResponse", "User profile updated.");
                             }
                         });
                 uploadPhotoInFirebase();
@@ -253,6 +273,7 @@ public class ProfileActivity extends BaseActivity {
     private void uploadPhotoInFirebase() {
         String uuid = UUID.randomUUID().toString();
 
+        modelCurrentUser.setUrlPicture(this.uriImageSelected.toString());
         StorageReference mImageRef = FirebaseStorage.getInstance().getReference(uuid);
         mImageRef.putFile(this.uriImageSelected)
                 .addOnSuccessListener(this, taskSnapshot -> {
@@ -264,19 +285,6 @@ public class ProfileActivity extends BaseActivity {
                 })
                 .addOnFailureListener(this.onFailureListener());
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     @Override

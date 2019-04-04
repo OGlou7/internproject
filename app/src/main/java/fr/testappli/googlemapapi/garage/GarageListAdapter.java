@@ -55,8 +55,10 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
 
     @Override
     protected void onBindViewHolder(@NonNull GarageViewHolder holder, int position, @NonNull Garage model) {
-        holder.tv_row_description.setText(model.getDescription());
-        holder.tv_row_garage_address.setText(model.getAddress());
+        String address = model.getAddress().split(",")[0];
+        String city = model.getAddress().split(",")[1];
+        //holder.tv_row_description.setText(model.getDescription());
+        holder.tv_row_garage_address.setText(String.format("%s%s%s", address, System.lineSeparator(), city));
         holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(model));
         holder.itemView.setOnLongClickListener(v -> {
             onItemLongClickListener.onItemLongClick(model);
@@ -78,7 +80,7 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
 
         ImageView iv_row_image_garage;
         TextView tv_row_garage_address;
-        TextView tv_row_description;
+        //TextView tv_row_description;
         ImageView iv_garage_row_more;
         CheckBox cb_row_garage_is_reserved;
 
@@ -86,7 +88,7 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
             super(itemView);
             iv_row_image_garage = itemView.findViewById(R.id.iv_row_image_garage);
             tv_row_garage_address = itemView.findViewById(R.id.tv_row_garage_address);
-            tv_row_description = itemView.findViewById(R.id.tv_row_description);
+            //tv_row_description = itemView.findViewById(R.id.tv_row_description);
             iv_garage_row_more = itemView.findViewById(R.id.iv_garage_row_more);
             cb_row_garage_is_reserved = itemView.findViewById(R.id.cb_row_garage_is_reserved);
         }

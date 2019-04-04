@@ -11,18 +11,17 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,7 +55,6 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,15 +74,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     // PERMISSIONS
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 5445;
+    private static final String TAG = "MainActivity";
 
     // MAP
     private GoogleMap googleMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Marker currentLocationMarker;
     private Location currentLocation;
-    private Address currentAddress;
     private boolean firstTimeFlag = true;
     private AutocompleteSupportFragment autocompleteFragment;
+    private ArrayList<Marker> markerList = new ArrayList<>();
 
 
     private  BroadcastReceiver broadcastReceiver;
@@ -93,12 +92,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private RecyclerView recyclerView;
 
     // INTENT REQUEST
-    public final static int CALENDARACTIVITY_REQUEST = 1;
     public final static int PROFILEACTIVITY_REQUEST = 2;
+    public final static int GARAGEACTIVITY_REQUEST = 3;
+
+
 
     private User modelCurrentUser;
+    private ArrayList<Garage> garagesDisplayedInRecyclerView = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,11 +146,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
                             User user = document.toObject(User.class);
-                            Log.e("testtestUSER", user.getUsername());
                             displayAllAvailableGaragesForUser(user.getUid());
                         }
                     } else {
-                        Log.e("testtest", "Error getting documents: ", task.getException());
+                        Log.e("configureMapPointers", "Error getting documents: ", task.getException());
                     }
                 });
     }
@@ -161,12 +163,11 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                         for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
                             Garage garage = document.toObject(Garage.class);
                             if(garage.getisAvailable()) {
-                                Log.e("testtestGARAGE", garage.getAddress());
                                 garageArrayList.add(garage);
                             }
                         }
                     } else {
-                        Log.d("testtest", "Error getting documents: ", task.getException());
+                        Log.d("displayAllAvailableGaragesForUser", "Error getting documents: ", task.getException());
                     }
                     configureListRecyclerView(garageArrayList);
                     ArrayList<String> addressList = new ArrayList<>();
@@ -184,13 +185,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     void configureListRecyclerView(ArrayList<Garage> garageArrayList){
         // set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.listView2);
+        recyclerView = findViewById(R.id.listView2);
         LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(horizontalLayoutManager);
 
         // set up horizontal list
+        garagesDisplayedInRecyclerView.clear();
+        garagesDisplayedInRecyclerView.addAll(garageArrayList);
         MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, garageArrayList);
         adapter2.setClickListener((view, position) -> {
+            recyclerView.scrollToPosition(position);
             Garage garageClicked = adapter2.getItem(position);
             googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(getLatLongFromAddressString(getApplicationContext(),garageClicked.getAddress())));
@@ -213,20 +217,24 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
         assert supportMapFragment != null;
         supportMapFragment.getMapAsync(this);
-        findViewById(R.id.currentLocationImageButton).setOnClickListener(currentLocationClickListener);
+        // Center the map with current location
+        findViewById(R.id.currentLocationImageButton).setOnClickListener(v -> {
+            if (v.getId() == R.id.currentLocationImageButton && googleMap != null && currentLocation != null)
+                MainActivity.this.animateCamera(currentLocation);
+        });
 
         // Initialize the AutocompleteSupportFragment.
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         }
 
-        autocompleteFragment = (AutocompleteSupportFragment)
-                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
-        assert autocompleteFragment != null;
+
+
+        // Initialize the AutocompleteSupportFragment.
+        autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
-
-        //Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -250,8 +258,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
             @Override
             public void onError(@NonNull Status status) {
-                // Handle the error.
-                Log.i("Error", "An error occurred: " + status);
+                // TODO: Handle the error.
+                Log.e(TAG, "An error occurred: " + status);
             }
         });
     }
@@ -261,15 +269,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         drawerLayout.addDrawerListener(
                 new DrawerLayout.DrawerListener() {
                     @Override
-                    public void onDrawerSlide(View drawerView, float slideOffset) {
+                    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
                         // Respond when the drawer's position changes
                     }
                     @Override
-                    public void onDrawerOpened(View drawerView) {
+                    public void onDrawerOpened(@NonNull View drawerView) {
                         // Respond when the drawer is opened
                     }
                     @Override
-                    public void onDrawerClosed(View drawerView) {
+                    public void onDrawerClosed(@NonNull View drawerView) {
                         // Respond when the drawer is closed
                     }
                     @Override
@@ -288,12 +296,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     void setOwnerPartVisibleDrawer(){
         navigationView.getMenu().findItem(R.id.activity_main_drawer_owner_part).setVisible((Objects.requireNonNull(modelCurrentUser).getIsVendor()));
-
         ImageView iv_profile_image = findViewById(R.id.iv_profile_image);
-        //iv_profile_image.setImageURI(getCurrentUser().getPhotoUrl());
 
         Glide.with(this)
-                .load(getCurrentUser().getPhotoUrl())
+                .load(Uri.parse(modelCurrentUser.getUrlPicture()))
                 .apply(RequestOptions.circleCropTransform())
                 .into(iv_profile_image);
 
@@ -312,13 +318,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                     break;
                 case R.id.activity_main_drawer_profile:
                     Intent profile = new Intent(MainActivity.this, ProfileActivity.class);
+                    Bundle bundleProfile = new Bundle();
+                    bundleProfile.putSerializable("modelCurrentUser", modelCurrentUser);
+                    profile.putExtra("modelCurrentUser", bundleProfile);
                     startActivityForResult(profile, PROFILEACTIVITY_REQUEST);
                     break;
                 case R.id.activity_main_drawer_settings:
                     break;
                 case R.id.activity_main_drawer_garages:
                     Intent garageIntent = new Intent(MainActivity.this, GarageActivity.class);
-                    startActivityForResult(garageIntent, PROFILEACTIVITY_REQUEST);
+                    startActivityForResult(garageIntent, GARAGEACTIVITY_REQUEST);
                     break;
                 case R.id.activity_main_drawer_overview:
                     break;
@@ -339,8 +348,21 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     // Get Current User from Firestore
     private void getCurrentUserFromFirestore(){
-        UserHelper.getUser(getCurrentUser().getUid()).addOnSuccessListener(documentSnapshot -> modelCurrentUser = documentSnapshot.toObject(User.class));
+        UserHelper.getUser(Objects.requireNonNull(getCurrentUser()).getUid()).addOnSuccessListener(documentSnapshot -> modelCurrentUser = documentSnapshot.toObject(User.class));
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PROFILEACTIVITY_REQUEST) {
+            configureMapPointers();
+            Bundle bundleProfile = Objects.requireNonNull(data.getExtras()).getBundle("modelCurrentUser");
+            modelCurrentUser = (User) Objects.requireNonNull(Objects.requireNonNull(bundleProfile).getSerializable("modelCurrentUser"));
+        }
+    }
+
+
 
     @Override
     public int getFragmentLayout() { return R.layout.activity_profile; }
@@ -369,14 +391,15 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     public void setAddressMarkers(ArrayList<String> addressMarkersAddress){
         // Setting the position of the marker
         String[] registeredAddresses = addressMarkersAddress.toArray(new String[0]);
+        for(Marker marker : markerList) marker.remove();
 
         for (String registeredAddresse : registeredAddresses){
             String address = registeredAddresse.split(";")[0];
             LatLng userLatLng = getLatLongFromAddressString(getApplicationContext(), address);
             if(userLatLng != null){
-                googleMap.addMarker(new MarkerOptions().position(userLatLng)
+                markerList.add(googleMap.addMarker(new MarkerOptions().position(userLatLng)
                         .title(address)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))));
             }
         }
     }
@@ -403,11 +426,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_search:
-                Toast.makeText(getApplicationContext(), "Search", Toast.LENGTH_SHORT).show();
-                if(autocompleteFragment.isVisible())
-                    Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
-                else
-                    Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.VISIBLE);
                 return true;
             case R.id.action_chat:
                 if (this.isCurrentUserLogged()){
@@ -418,7 +436,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 return true;
             case R.id.action_garage_list:
                 Intent garageIntent = new Intent(MainActivity.this, GarageActivity.class);
-                startActivityForResult(garageIntent, PROFILEACTIVITY_REQUEST);
+                startActivityForResult(garageIntent, GARAGEACTIVITY_REQUEST);
                 return true;
             case R.id.action_profile:
                 Intent profile = new Intent(MainActivity.this, ProfileActivity.class);
@@ -439,12 +457,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         this.googleMap = googleMap;
-        //setAddressMarkers();
 
         this.googleMap.setOnMarkerClickListener(marker -> {
-            if(marker.getTitle() != null && !marker.getTitle().equals("Your Position"))
-                //TODO: AFFICHER LES DETAIL DU GARAGE ICI
-                Log.e("TESTTEST444", marker.getTitle());
+            if(marker.getTitle() != null && !marker.getTitle().equals("Your Position")) {
+                int indexOfGarage = 0;
+                for(Garage garage : garagesDisplayedInRecyclerView){
+                    if(marker.getTitle().equals(garage.getAddress()))  break;
+                    indexOfGarage++;
+                }
+                recyclerView.scrollToPosition(indexOfGarage);
+            }
             return false;
         });
     }
@@ -479,8 +501,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 firstTimeFlag = false;
             }
             showMarker(currentLocation);
-            currentAddress = getAddressFromLatLong(getApplicationContext(),currentLocation.getLatitude(),currentLocation.getLongitude());
-            Toast.makeText(getApplicationContext(), currentAddress.getAddressLine(0), Toast.LENGTH_SHORT).show();
+            Address currentAddress = getAddressFromLatLong(getApplicationContext(), currentLocation.getLatitude(), currentLocation.getLongitude());
+            Toast.makeText(getApplicationContext(), Objects.requireNonNull(currentAddress).getAddressLine(0), Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -541,22 +563,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         markerOptions.position(latLng);
         markerOptions.title(addressText);
 
-        Log.e("TEST8TEST", latLng.toString());
-        //googleMap.clear();
         googleMap.addMarker(markerOptions).setTitle(addresses.get(0).getAddressLine(0));
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
     }
-
-    // Center the map with current location
-    private final View.OnClickListener currentLocationClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if (view.getId() == R.id.currentLocationImageButton && googleMap != null && currentLocation != null)
-                MainActivity.this.animateCamera(currentLocation);
-        }
-    };
-
 
     private void showMarker(@NonNull Location currentLocation) {
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
@@ -595,4 +605,25 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         fusedLocationProviderClient = null;
         googleMap = null;
     }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

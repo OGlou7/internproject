@@ -91,4 +91,12 @@ class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.V
     public int getItemCount() {
         return garageDataList.size();
     }
+
+    int getGaragePositionByAddress(String address){
+        for(Garage garage : garageDataList){
+            if(garage.getAddress().equals(address))
+                return garageDataList.indexOf(garage);
+        }
+        return 0;
+    }
 }

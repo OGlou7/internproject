@@ -4,7 +4,7 @@ import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 
-public class User {
+public class User implements java.io.Serializable{
 
     private String uid;
     private String username;
