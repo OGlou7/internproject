@@ -1,55 +1,34 @@
 package fr.testappli.googlemapapi.garage;
 
-import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.Query;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.UUID;
 
 import fr.testappli.googlemapapi.CalendarActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.GarageHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.form.GarageForm;
 import fr.testappli.googlemapapi.models.Garage;
 
 public class GarageActivity extends BaseActivity {
     public final static int CALENDARACTIVITY_REQUEST = 1;
+    public final static int GARAGEFORM_ADD_REQUEST = 2;
+    public final static int GARAGEFORM_UPDATE_REQUEST = 3;
 
     // FOR DESIGN
     private RecyclerView recyclerView;
-    private PopupWindow mPopupWindow;
-    private RelativeLayout mRelativeLayout;
 
 
     // FOR DATA
@@ -75,7 +54,6 @@ public class GarageActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_garage_list);
-        mRelativeLayout = findViewById(R.id.garageMainLayout);
         recyclerView = findViewById(R.id.listViewGarage);
 
         // setup the toolbar
@@ -99,168 +77,19 @@ public class GarageActivity extends BaseActivity {
     public int getFragmentLayout() { return R.layout.activity_profile; }
 
     public void addGarage(){
-        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-
-        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.new_garage_form,null);
-
-        mPopupWindow = new PopupWindow(
-                customView,
-                ActionBar.LayoutParams.MATCH_PARENT,
-                ActionBar.LayoutParams.MATCH_PARENT
-        );
-
-        mPopupWindow.setFocusable(true);
-        mPopupWindow.update();
-
-        EditText et_description = customView.findViewById(R.id.et_description);
-        EditText et_address = customView.findViewById(R.id.et_address);
-        EditText et_country = customView.findViewById(R.id.et_country);
-        EditText et_city = customView.findViewById(R.id.et_city);
-        EditText et_price = customView.findViewById(R.id.et_price);
-
-        TextView tv_address_invalid = customView.findViewById(R.id.tv_address_invalid);
-
-        Button b_register = customView.findViewById(R.id.b_register);
-        b_register.setOnClickListener(view -> {
-            if(et_address.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Address is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(et_country.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Country is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(et_city.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "City is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(et_price.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Price is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
-
-            if(isAddressCorrect(completeAddress)){
-                createGarageInFirestore(completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
-                mPopupWindow.dismiss();
-            }
-            else {
-                tv_address_invalid.setVisibility(View.VISIBLE);
-            }
-        });
-
-
-        ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
-        ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
-
-        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mPopupWindow.showAtLocation(mRelativeLayout, Gravity.CENTER,0,0);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
+        Intent garageFormAdd = new Intent(GarageActivity.this, GarageForm.class);
+        garageFormAdd.putExtra("Action", "add");
+        startActivityForResult(garageFormAdd, GARAGEFORM_ADD_REQUEST);
     }
 
     public void modifyGarage(Garage garage){
-        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 
-        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.new_garage_form,null);
-
-        mPopupWindow = new PopupWindow(
-                customView,
-                ActionBar.LayoutParams.MATCH_PARENT,
-                ActionBar.LayoutParams.MATCH_PARENT
-        );
-
-        mPopupWindow.setFocusable(true);
-        mPopupWindow.update();
-
-        EditText et_description = customView.findViewById(R.id.et_description);
-        EditText et_address = customView.findViewById(R.id.et_address);
-        EditText et_country = customView.findViewById(R.id.et_country);
-        EditText et_city = customView.findViewById(R.id.et_city);
-        EditText et_price = customView.findViewById(R.id.et_price);
-        TextView tv_address_invalid = customView.findViewById(R.id.tv_address_invalid);
-
-        et_description.setText(garage.getDescription());
-        et_address.setText(garage.getAddress().split(",")[0]);
-        et_city.setText(garage.getAddress().split(",")[1]);
-        et_country.setText(garage.getAddress().split(",")[2]);
-        et_price.setText(String.valueOf(garage.getPrice()));
-
-        Button b_register = customView.findViewById(R.id.b_register);
-        b_register.setOnClickListener(view -> {
-            if(et_address.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Address is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(et_country.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Country is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(et_city.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "City is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(et_price.getText().toString().isEmpty()) {
-                Toast.makeText(getApplicationContext(), "Price is empty", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String completeAddress = et_address.getText().toString() + "," + et_city.getText().toString() + "," + et_country.getText().toString();
-
-            if(isAddressCorrect(completeAddress)){
-                updateGarageInFirestore(garage.getUid(), completeAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
-                mPopupWindow.dismiss();
-            }
-            else {
-                tv_address_invalid.setVisibility(View.VISIBLE);
-            }
-        });
-
-
-        ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
-        ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
-
-        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mPopupWindow.showAtLocation(mRelativeLayout, Gravity.CENTER,0,0);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
-    }
-
-    public boolean isAddressCorrect(String address){
-        Geocoder geoCoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-        try {
-            List<Address> addresses = geoCoder.getFromLocationName(address, 2);
-
-            if (!addresses.isEmpty()) {
-                for(Address address1 : addresses)
-                    Log.e("TESTTEST123", address1.getAddressLine(0));
-                return true;
-            }else{
-                return false;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // REST REQUEST
-    private void createGarageInFirestore(String address, @Nullable String description, double price){
-        String uuid = UUID.randomUUID().toString();
-        GarageHelper.createGarageForUser(Objects.requireNonNull(getCurrentUser()).getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
-    }
-
-    private void updateGarageInFirestore(String garageID, String address,String description,double price){
-        GarageHelper.updateAddress(Objects.requireNonNull(getCurrentUser()).getUid(), garageID, address);
-        GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
-        GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);
+        Intent garageFormUpdate = new Intent(GarageActivity.this, GarageForm.class);
+        garageFormUpdate.putExtra("Action", "update");
+        Bundle bundleGarage = new Bundle();
+        bundleGarage.putSerializable("garageClicked", garage);
+        garageFormUpdate.putExtra("garageClicked", bundleGarage);
+        startActivityForResult(garageFormUpdate, GARAGEFORM_UPDATE_REQUEST);
     }
 
     // UI

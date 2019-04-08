@@ -10,10 +10,12 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.UserHelper;
+import fr.testappli.googlemapapi.models.User;
 
 
 public class LoginActivity extends BaseActivity {
@@ -50,13 +52,11 @@ public class LoginActivity extends BaseActivity {
             if (resultCode == RESULT_OK) {
                 this.createUserInFirestore();
                 Toast.makeText(getApplicationContext(), getString(R.string.connection_succeed), Toast.LENGTH_LONG).show();
-                Intent mapActivity = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(mapActivity);
-                finish();
+                startMapActivity();
             } else {
                 if (response == null) {
                     Toast.makeText(getApplicationContext(), getString(R.string.error_authentication_canceled), Toast.LENGTH_LONG).show();
-                } else if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK) {
+                } else if (Objects.requireNonNull(response.getError()).getErrorCode() == ErrorCodes.NO_NETWORK) {
                     Toast.makeText(getApplicationContext(), getString(R.string.error_no_internet), Toast.LENGTH_LONG).show();
                 } else if (response.getError().getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
                     Toast.makeText(getApplicationContext(), getString(R.string.error_unknown_error), Toast.LENGTH_LONG).show();
@@ -84,18 +84,24 @@ public class LoginActivity extends BaseActivity {
                         .setLogo(R.drawable.ic_action_refresh)
                         .build(),
                 RC_SIGN_IN);
+
     }
 
     // REST REQUEST
     private void createUserInFirestore(){
-
         if (this.getCurrentUser() != null){
 
             String urlPicture = (this.getCurrentUser().getPhotoUrl() != null) ? this.getCurrentUser().getPhotoUrl().toString() : null;
             String username = this.getCurrentUser().getDisplayName();
             String uid = this.getCurrentUser().getUid();
 
-            UserHelper.createUser(uid, username, urlPicture).addOnFailureListener(this.onFailureListener());
+            UserHelper.getUser(uid)
+                    .addOnSuccessListener(documentSnapshot -> {
+                        User modelCurrentUser = documentSnapshot.toObject(User.class);
+                        if(modelCurrentUser == null){
+                            UserHelper.createUser(uid, username, urlPicture).addOnFailureListener(this.onFailureListener());
+                        }
+                    });
         }
     }
 

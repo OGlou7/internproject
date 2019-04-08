@@ -230,6 +230,8 @@ public class ProfileActivity extends BaseActivity {
     @AfterPermissionGranted(RC_IMAGE_PERMS)
     public void onClickAddFile() { this.chooseImageFromPhone(); }
 
+    @Override
+    public void onBackPressed() { finishActivity(); }
 
     // --------------------
     // REST REQUESTS
@@ -273,13 +275,13 @@ public class ProfileActivity extends BaseActivity {
     private void uploadPhotoInFirebase() {
         String uuid = UUID.randomUUID().toString();
 
-        modelCurrentUser.setUrlPicture(this.uriImageSelected.toString());
         StorageReference mImageRef = FirebaseStorage.getInstance().getReference(uuid);
         mImageRef.putFile(this.uriImageSelected)
                 .addOnSuccessListener(this, taskSnapshot -> {
                     Task<Uri> firebaseUri = taskSnapshot.getStorage().getDownloadUrl();
                     firebaseUri.addOnSuccessListener(uri -> {
                         UserHelper.updatePhotoURI(getCurrentUser().getUid(), uri.toString());
+                        modelCurrentUser.setUrlPicture(uri.toString());
                     });
 
                 })

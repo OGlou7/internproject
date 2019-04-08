@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -69,6 +70,7 @@ import fr.testappli.googlemapapi.garage.GarageActivity;
 import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
 import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
+import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
@@ -97,6 +99,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     // INTENT REQUEST
     public final static int PROFILEACTIVITY_REQUEST = 2;
     public final static int GARAGEACTIVITY_REQUEST = 3;
+    private static final String PERMS = Manifest.permission.READ_EXTERNAL_STORAGE;
+    private static final int RC_IMAGE_PERMS = 100;
 
 
 
@@ -107,12 +111,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        if (!EasyPermissions.hasPermissions(this, PERMS)) {
+            EasyPermissions.requestPermissions(this, getString(R.string.popup_title_permission_files_access), RC_IMAGE_PERMS, PERMS);
+            return;
+        }
 
         getCurrentUserFromFirestore();
         configureToolbar();
         configureDrawerLayout();
         configureNavigationView();
         configureMap();
+        configureMapPointers();
 
         // Handle receiver to finish activity
         broadcastReceiver = new BroadcastReceiver() {
@@ -151,6 +160,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                     } else {
                         Log.e("configureMapPointers", "Error getting documents: ", task.getException());
                     }
+
+                    if(task.isComplete()) {
+                        createGarageRecyclerView(garagesDisplayedInRecyclerView);
+                    }
                 });
     }
 
@@ -167,13 +180,13 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                             }
                         }
                     } else {
-                        Log.d("displayAllAvailableGaragesForUser", "Error getting documents: ", task.getException());
+                        Log.d("displayAllAvailable", "Error getting documents: ", task.getException());
                     }
-                    configureListRecyclerView(garageArrayList);
                     ArrayList<String> addressList = new ArrayList<>();
                     for(Garage garage : garageArrayList)
                         addressList.add(garage.getAddress());
                     setAddressMarkers(addressList);
+                    configureListRecyclerView(garageArrayList);
                 });
     }
 
@@ -185,14 +198,32 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     void configureListRecyclerView(ArrayList<Garage> garageArrayList){
         // set up the RecyclerView
-        recyclerView = findViewById(R.id.listView2);
         LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(horizontalLayoutManager);
 
         // set up horizontal list
-        garagesDisplayedInRecyclerView.clear();
-        garagesDisplayedInRecyclerView.addAll(garageArrayList);
+        boolean exist;
+        if(garagesDisplayedInRecyclerView.isEmpty())
+            garagesDisplayedInRecyclerView.addAll(garageArrayList);
+        else {
+            for (Garage garage : garageArrayList) {
+                exist = false;
+                for(Garage garageKnown : garagesDisplayedInRecyclerView){
+                    if(garageKnown.getUid().equals(garage.getUid())) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if(!exist)
+                    garagesDisplayedInRecyclerView.add(garage);
+            }
+        }
+    }
+
+    void createGarageRecyclerView(ArrayList<Garage> garageArrayList){
+        recyclerView = findViewById(R.id.listView2);
         MyRecyclerViewAdapter adapter2 = new MyRecyclerViewAdapter(this, garageArrayList);
+        // Garage adapter click listener
         adapter2.setClickListener((view, position) -> {
             recyclerView.scrollToPosition(position);
             Garage garageClicked = adapter2.getItem(position);
@@ -201,6 +232,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             Toast.makeText(this, garageClicked.getAddress(), Toast.LENGTH_SHORT).show();
         });
 
+        // Navigation button adaptater click listener
         adapter2.setNavigationClickListener((view, position) -> {
             Garage garageClicked = adapter2.getItem(position);
             String url = "http://maps.google.com/maps?saddr=" +
@@ -228,9 +260,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
         }
 
-
-
-
         // Initialize the AutocompleteSupportFragment.
         autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
@@ -250,7 +279,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                     if (addresses != null && !addresses.isEmpty()){
                         search(addresses);
                     }
-                    Objects.requireNonNull(autocompleteFragment.getView()).setVisibility(View.GONE);
                 } catch (Exception e) {
                     Log.e("Error", "Address not found : ");
                 }
@@ -298,10 +326,20 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         navigationView.getMenu().findItem(R.id.activity_main_drawer_owner_part).setVisible((Objects.requireNonNull(modelCurrentUser).getIsVendor()));
         ImageView iv_profile_image = findViewById(R.id.iv_profile_image);
 
-        Glide.with(this)
-                .load(Uri.parse(modelCurrentUser.getUrlPicture()))
-                .apply(RequestOptions.circleCropTransform())
-                .into(iv_profile_image);
+        String uriUserPicture = modelCurrentUser.getUrlPicture();
+        Drawable test = getDrawable(R.drawable.ic_profile);
+
+        if(uriUserPicture != null)
+            Glide.with(this)
+                    .load(Uri.parse(modelCurrentUser.getUrlPicture()))
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(iv_profile_image);
+        else
+            Glide.with(this)
+                    .load(test)
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(iv_profile_image);
+
 
         TextView tv_username = findViewById(R.id.tv_username);
         tv_username.setText(modelCurrentUser.getUsername());
@@ -314,8 +352,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             int id = menuItem.getItemId();
 
             switch (id){
-                case R.id.activity_main_drawer_map :
-                    break;
                 case R.id.activity_main_drawer_profile:
                     Intent profile = new Intent(MainActivity.this, ProfileActivity.class);
                     Bundle bundleProfile = new Bundle();

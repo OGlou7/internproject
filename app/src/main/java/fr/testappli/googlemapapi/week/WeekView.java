@@ -807,11 +807,11 @@ public class WeekView extends View {
 
         // Prepare the name of the event.
         SpannableStringBuilder bob = new SpannableStringBuilder();
-        if (event.getName() != null) {
-            bob.append(event.getName());
-            bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, bob.length(), 0);
-            bob.append(' ');
-        }
+//        if (event.getName() != null) {
+//            bob.append(event.getName());
+//            bob.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, bob.length(), 0);
+//            bob.append(' ');
+//        }
 
         // Prepare the location of the event.
         if (event.getLocation() != null) {
@@ -989,7 +989,7 @@ public class WeekView extends View {
             Calendar endTime = (Calendar) event.getStartTime().clone();
             endTime.set(Calendar.HOUR_OF_DAY, 23);
             endTime.set(Calendar.MINUTE, 59);
-            WeekViewEvent event1 = new WeekViewEvent(event.getId(), event.getName(), event.getLocation(), event.getStartTime(), endTime);
+            WeekViewEvent event1 = new WeekViewEvent(event.getId(), event.getLocation(), event.getStartTime(), endTime);
             event1.setColor(event.getColor());
             mEventRects.add(new EventRect(event1, event, null));
 
@@ -1003,7 +1003,7 @@ public class WeekView extends View {
                 Calendar endOfOverDay = (Calendar) overDay.clone();
                 endOfOverDay.set(Calendar.HOUR_OF_DAY, 23);
                 endOfOverDay.set(Calendar.MINUTE, 59);
-                WeekViewEvent eventMore = new WeekViewEvent(event.getId(), event.getName(), overDay, endOfOverDay);
+                WeekViewEvent eventMore = new WeekViewEvent(event.getId(), overDay, endOfOverDay);
                 eventMore.setColor(event.getColor());
                 mEventRects.add(new EventRect(eventMore, event, null));
 
@@ -1015,7 +1015,7 @@ public class WeekView extends View {
             Calendar startTime = (Calendar) event.getEndTime().clone();
             startTime.set(Calendar.HOUR_OF_DAY, 0);
             startTime.set(Calendar.MINUTE, 0);
-            WeekViewEvent event2 = new WeekViewEvent(event.getId(), event.getName(), event.getLocation(), startTime, event.getEndTime());
+            WeekViewEvent event2 = new WeekViewEvent(event.getId(), event.getLocation(), startTime, event.getEndTime());
             event2.setColor(event.getColor());
             mEventRects.add(new EventRect(event2, event, null));
         }

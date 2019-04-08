@@ -120,7 +120,6 @@ public class CalendarActivity extends BaseActivity {
             newWeekViewEvent.setStartTime(getDatePart(nonAvailableTime.getStartTime()));
             newWeekViewEvent.setEndTime(getDatePart(nonAvailableTime.getEndTime()));
             newWeekViewEvent.setLocation(nonAvailableTime.getLocation());
-            newWeekViewEvent.setName(nonAvailableTime.getName());
             newWeekViewEvent.setId(nonAvailableTime.getId());
             weekViewEventArrayList.add(newWeekViewEvent);
         }

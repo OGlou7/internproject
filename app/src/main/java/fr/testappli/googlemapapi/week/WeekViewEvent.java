@@ -10,7 +10,6 @@ public class WeekViewEvent implements java.io.Serializable{
     private String mId;
     private Calendar mStartTime;
     private Calendar mEndTime;
-    private String mName;
     private String mLocation;
     private int mColor;
 
@@ -21,7 +20,6 @@ public class WeekViewEvent implements java.io.Serializable{
     /**
      * Initializes the event for week view.
      * @param id The id of the event.
-     * @param name Name of the event.
      * @param startYear Year when the event starts.
      * @param startMonth Month when the event starts.
      * @param startDay Day when the event starts.
@@ -33,7 +31,7 @@ public class WeekViewEvent implements java.io.Serializable{
      * @param endHour Hour (in 24-hour format) when the event ends.
      * @param endMinute Minute when the event ends.
      */
-    public WeekViewEvent(String id, String name, int startYear, int startMonth, int startDay, int startHour, int startMinute, int endYear, int endMonth, int endDay, int endHour, int endMinute) {
+    public WeekViewEvent(String id, int startYear, int startMonth, int startDay, int startHour, int startMinute, int endYear, int endMonth, int endDay, int endHour, int endMinute) {
         this.mId = id;
 
         this.mStartTime = Calendar.getInstance();
@@ -49,21 +47,17 @@ public class WeekViewEvent implements java.io.Serializable{
         this.mEndTime.set(Calendar.DAY_OF_MONTH, endDay);
         this.mEndTime.set(Calendar.HOUR_OF_DAY, endHour);
         this.mEndTime.set(Calendar.MINUTE, endMinute);
-
-        this.mName = name;
     }
 
     /**
      * Initializes the event for week view.
      * @param id The id of the event.
-     * @param name Name of the event.
      * @param location The location of the event.
      * @param startTime The time when the event starts.
      * @param endTime The time when the event ends.
      */
-    public WeekViewEvent(String id, String name, String location, Calendar startTime, Calendar endTime) {
+    public WeekViewEvent(String id, String location, Calendar startTime, Calendar endTime) {
         this.mId = id;
-        this.mName = name;
         this.mLocation = location;
         this.mStartTime = startTime;
         this.mEndTime = endTime;
@@ -72,12 +66,11 @@ public class WeekViewEvent implements java.io.Serializable{
     /**
      * Initializes the event for week view.
      * @param id The id of the event.
-     * @param name Name of the event.
      * @param startTime The time when the event starts.
      * @param endTime The time when the event ends.
      */
-    public WeekViewEvent(String id, String name, Calendar startTime, Calendar endTime) {
-        this(id, name, null, startTime, endTime);
+    public WeekViewEvent(String id, Calendar startTime, Calendar endTime) {
+        this(id, null, startTime, endTime);
     }
 
 
@@ -95,14 +88,6 @@ public class WeekViewEvent implements java.io.Serializable{
 
     public void setEndTime(Calendar endTime) {
         this.mEndTime = endTime;
-    }
-
-    public String getName() {
-        return mName;
-    }
-
-    public void setName(String name) {
-        this.mName = name;
     }
 
     public String getLocation() {

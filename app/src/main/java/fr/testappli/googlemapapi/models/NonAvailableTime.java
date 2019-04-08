@@ -17,7 +17,6 @@ public class NonAvailableTime implements java.io.Serializable{
 
     public NonAvailableTime(WeekViewEvent weekViewEvent){
         this.mId = weekViewEvent.getId();
-        this.mName = weekViewEvent.getName();
         this.mStartTime = weekViewEvent.getStartTime().getTime();
         this.mEndTime = weekViewEvent.getEndTime().getTime();
         this.mLocation = weekViewEvent.getLocation();
