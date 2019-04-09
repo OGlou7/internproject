@@ -30,7 +30,6 @@ public class GarageActivity extends BaseActivity {
     // FOR DESIGN
     private RecyclerView recyclerView;
 
-
     // FOR DATA
     private GarageListAdapter garageListAdapter;
 
@@ -83,7 +82,6 @@ public class GarageActivity extends BaseActivity {
     }
 
     public void modifyGarage(Garage garage){
-
         Intent garageFormUpdate = new Intent(GarageActivity.this, GarageForm.class);
         garageFormUpdate.putExtra("Action", "update");
         Bundle bundleGarage = new Bundle();

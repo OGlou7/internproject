@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,7 +24,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -33,13 +33,9 @@ import com.google.firebase.storage.StorageReference;
 import java.util.Objects;
 import java.util.UUID;
 
-import butterknife.OnClick;
-import fr.testappli.googlemapapi.MainActivity;
 import fr.testappli.googlemapapi.R;
-import fr.testappli.googlemapapi.api.MessageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
-import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -53,6 +49,7 @@ public class ProfileActivity extends BaseActivity {
     private ImageView imageViewProfile;
     private ProgressBar progressBar;
     private CheckBox checkBoxIsVendor;
+    private LinearLayout layoutButton;
 
     private static final int SIGN_OUT_TASK = 10;
     private static final int DELETE_USER_TASK = 20;
@@ -79,14 +76,14 @@ public class ProfileActivity extends BaseActivity {
         Button update = findViewById(R.id.profile_activity_button_update);
         Button signOut = findViewById(R.id.profile_activity_button_sign_out);
         Button delete = findViewById(R.id.profile_activity_button_delete);
+        layoutButton = findViewById(R.id.layoutButton);
 
-        imageViewProfile.setOnClickListener(v -> {
-            onClickAddFile();
-        });
+        imageViewProfile.setOnClickListener(v -> onClickAddFile());
         checkBoxIsVendor.setOnClickListener(v -> this.updateUserIsVendor());
         update.setOnClickListener(v -> {
             this.updateUsernameInFirebase();
             this.updateUserImmatriculationInFirebase();
+            Snackbar.make(layoutButton, "Profile mis à jour", Snackbar.LENGTH_LONG).show();
         });
         signOut.setOnClickListener(v -> this.signOutUserFromFirebase());
         delete.setOnClickListener(v -> new AlertDialog.Builder(this)
@@ -103,7 +100,7 @@ public class ProfileActivity extends BaseActivity {
         // setup the toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
@@ -158,6 +155,9 @@ public class ProfileActivity extends BaseActivity {
     // DELETE
     private void deleteUserFromFirebase(){
         if (this.getCurrentUser() != null) {
+            AuthUI.getInstance()
+                    .signOut(this)
+                    .addOnSuccessListener(this, this.updateUIAfterRESTRequestsCompleted(SIGN_OUT_TASK));
             UserHelper.deleteUser(this.getCurrentUser().getUid()).addOnFailureListener(this.onFailureListener());
             AuthUI.getInstance()
                     .delete(this)
@@ -259,7 +259,7 @@ public class ProfileActivity extends BaseActivity {
                         .setPhotoUri(this.uriImageSelected)
                         .build();
 
-                getCurrentUser().updateProfile(profileUpdates)
+                Objects.requireNonNull(getCurrentUser()).updateProfile(profileUpdates)
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 Log.e("handleResponse", "User profile updated.");
@@ -280,7 +280,7 @@ public class ProfileActivity extends BaseActivity {
                 .addOnSuccessListener(this, taskSnapshot -> {
                     Task<Uri> firebaseUri = taskSnapshot.getStorage().getDownloadUrl();
                     firebaseUri.addOnSuccessListener(uri -> {
-                        UserHelper.updatePhotoURI(getCurrentUser().getUid(), uri.toString());
+                        UserHelper.updatePhotoURI(Objects.requireNonNull(getCurrentUser()).getUid(), uri.toString());
                         modelCurrentUser.setUrlPicture(uri.toString());
                     });
 

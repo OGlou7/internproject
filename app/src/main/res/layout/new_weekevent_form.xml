@@ -53,9 +53,15 @@
                     android:inputType="text"
                     android:textSize="@dimen/largeText"
                     android:textColor="@color/colorBlack"
+                    android:backgroundTint="@color/myColorSand"
                     android:text="Start Date"
                     tools:ignore="Autofill"
                     />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_round_arrow_forward"/>
 
                 <TextView
                     android:id="@+id/tv_week_enddate"
@@ -67,12 +73,13 @@
                     android:inputType="text"
                     android:textSize="@dimen/largeText"
                     android:textColor="@color/colorBlack"
+                    android:backgroundTint="@color/myColorSand"
                     android:text="End Date  "
                     tools:ignore="Autofill"
                     />
             </LinearLayout>
 
-            <LinearLayout
+            <!--<LinearLayout
                 android:id="@+id/linearlayout_startdate"
                 android:layout_below="@+id/linearlayout_tvdate"
                 android:layout_width="match_parent"
@@ -110,12 +117,12 @@
                     android:text="01/01/1997"
                     tools:ignore="Autofill"
                     />
-            </LinearLayout>
+            </LinearLayout>-->
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/linearlayout_startdate"
+                android:layout_below="@+id/linearlayout_tvdate"
                 android:gravity="center">
 
                 <NumberPicker

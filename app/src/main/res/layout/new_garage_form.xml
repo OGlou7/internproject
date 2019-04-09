@@ -5,9 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/popup_bg">
+    android:background="@drawable/popup_bg"
+    android:id="@+id/mainScrollView">
 
     <RelativeLayout
+        android:id="@+id/mainRelativeLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center">
@@ -102,22 +104,100 @@
 
 
 
-
-        <EditText
-            android:id="@+id/et_description"
-            android:layout_below="@+id/layoutPrice"
+        <RelativeLayout
+            android:id="@+id/layoutDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/myDarkGrey"
-            android:textColorHint="@color/myLightGrey"
-            android:hint="Description"
-            android:inputType="textMultiLine"
-            />
+            android:layout_below="@+id/layoutPrice"
+            android:layout_marginTop="@dimen/smallMargin"
+            android:layout_marginBottom="@dimen/smallMargin"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/tv_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:textSize="@dimen/normalText"
+                android:textColor="@color/myDarkGrey"
+                android:textColorHint="@color/myLightGrey"
+                android:text="Description :" />
 
+            <EditText
+                android:id="@+id/et_description"
+                android:layout_toEndOf="@+id/tv_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/myDarkGrey"
+                android:textColorHint="@color/myLightGrey"
+                android:hint="Description"
+                android:inputType="textMultiLine"
+                />
+        </RelativeLayout>
+
+
+        <CheckBox
+            android:id="@+id/cb_rent_all_day"
+            android:layout_below="@+id/layoutDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Mettre en location toute la journée ?"/>
+
+        <RelativeLayout
+            android:id="@+id/layoutPeriod"
+            android:layout_below="@+id/cb_rent_all_day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tv_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choississez la période de location :"/>
+
+            <LinearLayout
+                android:id="@+id/layout_time_picker"
+                android:layout_below="@+id/tv_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/smallMargin"
+                android:layout_marginBottom="@dimen/smallMargin"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <NumberPicker
+                    android:id="@+id/np_starttimepicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:theme="@style/NumberPickerText"
+                    android:layout_marginStart="@dimen/smallMargin"
+                    android:layout_marginEnd="@dimen/smallMargin"
+                    android:layout_marginTop="@dimen/smallMargin"
+                    android:layout_marginBottom="@dimen/smallMargin"
+                    />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_round_arrow_forward"/>
+
+                <NumberPicker
+                    android:id="@+id/np_endtimepicker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:theme="@style/NumberPickerText"
+                    android:layout_marginStart="@dimen/smallMargin"
+                    android:layout_marginEnd="@dimen/smallMargin"
+                    android:layout_marginTop="@dimen/smallMargin"
+                    android:layout_marginBottom="@dimen/smallMargin"
+                    />
+            </LinearLayout>
+        </RelativeLayout>
 
         <Button
             android:id="@+id/b_register"
-            android:layout_below="@+id/et_description"
+            android:layout_below="@+id/layoutPeriod"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Save"

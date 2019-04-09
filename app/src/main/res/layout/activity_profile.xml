@@ -118,9 +118,10 @@
 
     <!-- BUTTONS CONTAINER -->
     <LinearLayout
+        android:id="@+id/layoutButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="bottom"
+        android:gravity="center"
         android:orientation="vertical"
         android:layout_weight="1">
 
@@ -130,10 +131,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_update_account"
-            android:textColor="#fff"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/colorWhite"
             android:textSize="@dimen/normalText"
-            android:background="@drawable/button_radius_primary_color"
-            style="?android:attr/borderlessButtonStyle"
             android:layout_margin="@dimen/smallMargin"
             android:padding="@dimen/smallMargin"/>
 
@@ -143,10 +143,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_sign_out_account"
-            android:textColor="#fff"
+            android:background="@color/colorError"
+            android:textColor="@color/colorWhite"
             android:textSize="@dimen/normalText"
-            android:background="@drawable/button_radius_error_color"
-            style="?android:attr/borderlessButtonStyle"
             android:layout_margin="@dimen/smallMargin"
             android:padding="@dimen/smallMargin"/>
 
@@ -156,10 +155,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_delete_account"
-            android:textColor="#fff"
+            android:background="@color/colorAccent"
+            android:textColor="@color/colorWhite"
             android:textSize="@dimen/normalText"
-            android:background="@drawable/button_radius_accent_color"
-            style="?android:attr/borderlessButtonStyle"
             android:layout_margin="@dimen/smallMargin"
             android:padding="@dimen/smallMargin"/>
 

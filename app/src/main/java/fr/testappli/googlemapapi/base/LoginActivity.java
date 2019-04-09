@@ -51,8 +51,6 @@ public class LoginActivity extends BaseActivity {
         if (requestCode == RC_SIGN_IN) {
             if (resultCode == RESULT_OK) {
                 this.createUserInFirestore();
-                Toast.makeText(getApplicationContext(), getString(R.string.connection_succeed), Toast.LENGTH_LONG).show();
-                startMapActivity();
             } else {
                 if (response == null) {
                     Toast.makeText(getApplicationContext(), getString(R.string.error_authentication_canceled), Toast.LENGTH_LONG).show();
@@ -90,7 +88,7 @@ public class LoginActivity extends BaseActivity {
     // REST REQUEST
     private void createUserInFirestore(){
         if (this.getCurrentUser() != null){
-
+            // get user info
             String urlPicture = (this.getCurrentUser().getPhotoUrl() != null) ? this.getCurrentUser().getPhotoUrl().toString() : null;
             String username = this.getCurrentUser().getDisplayName();
             String uid = this.getCurrentUser().getUid();
@@ -98,8 +96,17 @@ public class LoginActivity extends BaseActivity {
             UserHelper.getUser(uid)
                     .addOnSuccessListener(documentSnapshot -> {
                         User modelCurrentUser = documentSnapshot.toObject(User.class);
+                        // is user exist ?
                         if(modelCurrentUser == null){
-                            UserHelper.createUser(uid, username, urlPicture).addOnFailureListener(this.onFailureListener());
+                            UserHelper.createUser(uid, username, urlPicture)
+                                    .addOnFailureListener(this.onFailureListener())
+                                    .addOnSuccessListener(command -> {
+                                        Toast.makeText(getApplicationContext(), getString(R.string.connection_succeed), Toast.LENGTH_LONG).show();
+                                        startMapActivity();
+                                    });
+                        } else {
+                            Toast.makeText(getApplicationContext(), getString(R.string.connection_succeed), Toast.LENGTH_LONG).show();
+                            startMapActivity();
                         }
                     });
         }

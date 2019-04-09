@@ -9,18 +9,6 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/action_chat"
-        android:title="Chat"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_garage_list"
-        android:title="Garage"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_profile"
-        android:title="Profile"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_quit"
         android:title="Quit"
         app:showAsAction="never" />

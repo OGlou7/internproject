@@ -3,8 +3,8 @@ package fr.testappli.googlemapapi.week;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.content.Intent;
+import android.graphics.Camera;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -42,6 +42,10 @@ import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.models.Garage;
 
 public class WeekActivity extends BaseActivity {
+
+    private static final int WEEKEVENTFORM_UPDATE_REQUEST = 0;
+    private static final int WEEKEVENTFORM_ADD_REQUEST = 1;
+    private static final int WEEKEVENTFORM_DELETE_REQUEST = 2;
 
     private WeekView mWeekView = null;
     private ArrayList<WeekViewEvent> mNewEvents;
@@ -103,20 +107,12 @@ public class WeekActivity extends BaseActivity {
         mWeekView.goToDate(dayClicked);
         mWeekView.setEventTextColor(getResources().getColor(R.color.myGreen));
         mWeekView.setEventTextSize(30);
+        mWeekView.goToHour(8);
 
         // Empty view event click listener
         mWeekView.setEmptyViewClickListener(time -> {
             time.set(Calendar.MINUTE, time.get(Calendar.MINUTE) < 30 ? 0 : 30 );
-//            Calendar endTime = (Calendar) time.clone();
-//            endTime.add(Calendar.MINUTE, 30);
-
             addEvent(time);
-
-            // Create a new event.
-//            String uuid = UUID.randomUUID().toString();
-//            WeekViewEvent event = new WeekViewEvent(uuid, "New event", garageClicked.getAddress(), time, endTime);
-//            mNewEvents.add(event);
-//            mWeekView.notifyDatasetChanged();
         });
 
         // Event click listener
@@ -144,6 +140,17 @@ public class WeekActivity extends BaseActivity {
             events.addAll(oldEvents);
             return events;
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        /*if (requestCode == WEEKEVENTFORM_DELETE_REQUEST) {
+            Bundle BundleWeekViewEventToDelete = Objects.requireNonNull(data.getExtras()).getBundle("weekViewEventToDelete");
+            WeekViewEvent test = (WeekViewEvent) Objects.requireNonNull(Objects.requireNonNull(BundleWeekViewEventToDelete).getSerializable("weekViewEventToDelete"));
+            deleteNonAvailableTimeInFirestore(test);
+        }
+        mWeekView.notifyDatasetChanged();*/
     }
 
     @Override
@@ -257,6 +264,26 @@ public class WeekActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void testtest(){
+        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+
+        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.date_range_picker,null);
+
+        PopupWindow mPopupWindow = new PopupWindow(
+                customView,
+                ActionBar.LayoutParams.MATCH_PARENT,
+                ActionBar.LayoutParams.MATCH_PARENT
+        );
+
+        mPopupWindow.setFocusable(true);
+        mPopupWindow.update();
+
+
+        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+
 
     public static Calendar dateToCalendar(Date date){
         Calendar cal = Calendar.getInstance();
@@ -266,6 +293,7 @@ public class WeekActivity extends BaseActivity {
 
 
     public void addEvent(Calendar timeClicked){
+        ArrayList<Calendar> selectedCalendarsOnPicker = new ArrayList<>();
         Calendar endCalendar = (Calendar) timeClicked.clone();
         endCalendar.add(Calendar.MINUTE, 30);
 
@@ -282,14 +310,14 @@ public class WeekActivity extends BaseActivity {
         mPopupWindow.setFocusable(true);
         mPopupWindow.update();
 
+        // UI
         NumberPicker np_starttimepicker = customView.findViewById(R.id.np_starttimepicker);
         NumberPicker np_endtimepicker = customView.findViewById(R.id.np_endtimepicker);
+        Button b_weekevent_delete = customView.findViewById(R.id.b_weekevent_delete);
         TextView tv_week_startdate = customView.findViewById(R.id.tv_week_startdate);
         TextView tv_week_enddate = customView.findViewById(R.id.tv_week_enddate);
 
-        tv_week_startdate.setPaintFlags(tv_week_startdate.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-        tv_week_enddate.setPaintFlags(tv_week_enddate.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-
+        // Handle Time Picker
         List<String> displayedValues = new ArrayList<>();
         for(int i=0;i<24;i++){
             displayedValues.add(String.format("%02d:00", i));
@@ -305,39 +333,33 @@ public class WeekActivity extends BaseActivity {
         np_endtimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
         np_endtimepicker.setValue((endCalendar.get(Calendar.HOUR_OF_DAY) * 2) + (endCalendar.get(Calendar.MINUTE) == 30 ? 1 : 0));
 
+        // Handle UI
 
-        TextView et_week_startdate = customView.findViewById(R.id.et_week_startdate);
-        et_week_startdate.setText(String.format("%02d/%02d/%02d", timeClicked.get(Calendar.DAY_OF_MONTH),
-                timeClicked.get(Calendar.MONTH) + 1,
-                timeClicked.get(Calendar.YEAR)));
+        b_weekevent_delete.setText("Cancel");
+        b_weekevent_delete.setOnClickListener(view -> mPopupWindow.dismiss());
 
-        TextView et_week_enddate = customView.findViewById(R.id.et_week_enddate);
-        et_week_enddate.setText(String.format("%02d/%02d/%02d", endCalendar.get(Calendar.DAY_OF_MONTH),
-                endCalendar.get(Calendar.MONTH) + 1,
-                endCalendar.get(Calendar.YEAR)));
+        // Handle Time Picker
+        DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
+            selectedCalendarsOnPicker.addAll(calendars);
+            tv_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
+                    calendars.get(0).get(Calendar.MONTH) + 1,
+                    calendars.get(0).get(Calendar.YEAR)));
+            tv_week_enddate.setText(String.format("%02d/%02d/%02d", calendars.get(calendars.size() - 1).get(Calendar.DAY_OF_MONTH),
+                    calendars.get(calendars.size() - 1).get(Calendar.MONTH) + 1,
+                    calendars.get(calendars.size() - 1).get(Calendar.YEAR)));
+        }).pickerType(CalendarView.RANGE_PICKER);
 
-
-        ArrayList<Calendar> test = new ArrayList<>();
-        ImageButton ib_week_date = customView.findViewById(R.id.ib_week_date);
-        ib_week_date.setOnClickListener(b -> {
-            DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
-                test.addAll(calendars);
-                et_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
-                        calendars.get(0).get(Calendar.MONTH) + 1,
-                        calendars.get(0).get(Calendar.YEAR)));
-                et_week_enddate.setText(String.format("%02d/%02d/%02d", calendars.get(calendars.size() - 1).get(Calendar.DAY_OF_MONTH),
-                        calendars.get(calendars.size() - 1).get(Calendar.MONTH) + 1,
-                        calendars.get(calendars.size() - 1).get(Calendar.YEAR)));
-            }).pickerType(CalendarView.RANGE_PICKER);
-
+        tv_week_startdate.setOnClickListener(v -> {
             DatePicker datePicker = builder.build();
             datePicker.show();
         });
 
-        Button b_weekevent_delete = customView.findViewById(R.id.b_weekevent_delete);
-        b_weekevent_delete.setText("Cancel");
-        b_weekevent_delete.setOnClickListener(view -> mPopupWindow.dismiss());
+        tv_week_enddate.setOnClickListener(v -> {
+            DatePicker datePicker = builder.build();
+            datePicker.show();
+        });
 
+        // Save new event
         Button b_weekevent_save = customView.findViewById(R.id.b_weekevent_save);
         b_weekevent_save.setOnClickListener(view -> {
             Calendar startTime = timeClicked;
@@ -348,12 +370,12 @@ public class WeekActivity extends BaseActivity {
             endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
             endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
 
-            if(!test.isEmpty()) {
-                startTime = test.get(0);
+            if(!selectedCalendarsOnPicker.isEmpty()) {
+                startTime = selectedCalendarsOnPicker.get(0);
                 startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
                 startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
 
-                endTime = test.get(test.size() - 1);
+                endTime = selectedCalendarsOnPicker.get(selectedCalendarsOnPicker.size() - 1);
                 endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
                 endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
             }
@@ -378,11 +400,11 @@ public class WeekActivity extends BaseActivity {
         mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
     }
 
 
     public void modifyEvent(WeekViewEvent weekViewEvent){
+        ArrayList<Calendar> selectedCalendarsOnPicker = new ArrayList<>();
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 
         @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.new_weekevent_form,null);
@@ -396,9 +418,27 @@ public class WeekActivity extends BaseActivity {
         mPopupWindow.setFocusable(true);
         mPopupWindow.update();
 
+        // UI
         NumberPicker np_starttimepicker = customView.findViewById(R.id.np_starttimepicker);
         NumberPicker np_endtimepicker = customView.findViewById(R.id.np_endtimepicker);
+        Button b_weekevent_save = customView.findViewById(R.id.b_weekevent_save);
+        Button b_weekevent_delete = customView.findViewById(R.id.b_weekevent_delete);
+        TextView tv_week_startdate = customView.findViewById(R.id.tv_week_startdate);
+        TextView tv_week_enddate = customView.findViewById(R.id.tv_week_enddate);
+        ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
 
+        // Handle UI
+        tv_week_startdate.setText(String.format("%02d/%02d/%02d", weekViewEvent.getStartTime().get(Calendar.DAY_OF_MONTH),
+                weekViewEvent.getStartTime().get(Calendar.MONTH) + 1,
+                weekViewEvent.getStartTime().get(Calendar.YEAR)));
+
+        tv_week_enddate.setText(String.format("%02d/%02d/%02d", weekViewEvent.getEndTime().get(Calendar.DAY_OF_MONTH),
+                weekViewEvent.getEndTime().get(Calendar.MONTH) + 1,
+                weekViewEvent.getEndTime().get(Calendar.YEAR)));
+
+        ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
+
+        // Handle Number Picker
         List<String> displayedValues = new ArrayList<>();
         for(int i=0;i<24;i++){
             displayedValues.add(String.format("%02d:00", i));
@@ -414,36 +454,28 @@ public class WeekActivity extends BaseActivity {
         np_endtimepicker.setDisplayedValues(displayedValues.toArray(new String[0]));
         np_endtimepicker.setValue((weekViewEvent.getEndTime().get(Calendar.HOUR_OF_DAY) * 2) + (weekViewEvent.getEndTime().get(Calendar.MINUTE) == 30 ? 1 : 0));
 
+        // Handle Time Picker
+        DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
+            selectedCalendarsOnPicker.addAll(calendars);
+            tv_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
+                    calendars.get(0).get(Calendar.MONTH) + 1,
+                    calendars.get(0).get(Calendar.YEAR)));
+            tv_week_enddate.setText(String.format("%02d/%02d/%02d", calendars.get(calendars.size() - 1).get(Calendar.DAY_OF_MONTH),
+                    calendars.get(calendars.size() - 1).get(Calendar.MONTH) + 1,
+                    calendars.get(calendars.size() - 1).get(Calendar.YEAR)));
+        }).pickerType(CalendarView.RANGE_PICKER);
 
-        TextView et_week_startdate = customView.findViewById(R.id.et_week_startdate);
-        et_week_startdate.setText(String.format("%02d/%02d/%02d", weekViewEvent.getStartTime().get(Calendar.DAY_OF_MONTH),
-                weekViewEvent.getStartTime().get(Calendar.MONTH) + 1,
-                weekViewEvent.getStartTime().get(Calendar.YEAR)));
-
-        TextView et_week_enddate = customView.findViewById(R.id.et_week_enddate);
-        et_week_enddate.setText(String.format("%02d/%02d/%02d", weekViewEvent.getEndTime().get(Calendar.DAY_OF_MONTH),
-                weekViewEvent.getEndTime().get(Calendar.MONTH) + 1,
-                weekViewEvent.getEndTime().get(Calendar.YEAR)));
-
-
-        ArrayList<Calendar> test = new ArrayList<>();
-        ImageButton ib_week_date = customView.findViewById(R.id.ib_week_date);
-        ib_week_date.setOnClickListener(b -> {
-            DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
-                test.addAll(calendars);
-                et_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
-                        calendars.get(0).get(Calendar.MONTH) + 1,
-                        calendars.get(0).get(Calendar.YEAR)));
-                et_week_enddate.setText(String.format("%02d/%02d/%02d", calendars.get(calendars.size() - 1).get(Calendar.DAY_OF_MONTH),
-                        calendars.get(calendars.size() - 1).get(Calendar.MONTH) + 1,
-                        calendars.get(calendars.size() - 1).get(Calendar.YEAR)));
-            }).pickerType(CalendarView.RANGE_PICKER);
-
+        tv_week_startdate.setOnClickListener(v -> {
             DatePicker datePicker = builder.build();
             datePicker.show();
         });
 
-        Button b_weekevent_delete = customView.findViewById(R.id.b_weekevent_delete);
+        tv_week_enddate.setOnClickListener(v -> {
+            DatePicker datePicker = builder.build();
+            datePicker.show();
+        });
+
+        // Handle Save & Delete Button
         b_weekevent_delete.setOnClickListener(view -> {
             new AlertDialog.Builder(this)
                 .setMessage(R.string.popup_message_confirmation_delete_garage)
@@ -454,7 +486,6 @@ public class WeekActivity extends BaseActivity {
             mPopupWindow.dismiss();
         });
 
-        Button b_weekevent_save = customView.findViewById(R.id.b_weekevent_save);
         b_weekevent_save.setOnClickListener(view -> {
             Calendar startTime = weekViewEvent.getStartTime();
             startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
@@ -464,12 +495,12 @@ public class WeekActivity extends BaseActivity {
             endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
             endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
 
-            if(!test.isEmpty()) {
-                startTime = test.get(0);
+            if(!selectedCalendarsOnPicker.isEmpty()) {
+                startTime = selectedCalendarsOnPicker.get(0);
                 startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
                 startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
 
-                endTime = test.get(test.size() - 1);
+                endTime = selectedCalendarsOnPicker.get(selectedCalendarsOnPicker.size() - 1);
                 endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
                 endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
             }
@@ -489,13 +520,9 @@ public class WeekActivity extends BaseActivity {
             mPopupWindow.dismiss();
         });
 
-        ImageButton ib_cross = customView.findViewById(R.id.ib_cross);
-        ib_cross.setOnClickListener(view -> mPopupWindow.dismiss());
-
         mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
     }
 
     // REST REQUEST
@@ -513,9 +540,9 @@ public class WeekActivity extends BaseActivity {
             mNewEvents.remove(weekViewEvent);
         } else if(mOldEvents.contains(weekViewEvent)){
             mOldEvents.remove(weekViewEvent);
-        }
-        else
+        } else {
             return;
+        }
         mWeekView.notifyDatasetChanged();
     }
 }

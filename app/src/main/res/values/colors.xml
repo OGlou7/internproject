@@ -17,6 +17,7 @@
     <color name="myLightGrey">#C0C0C0</color>
     <color name="myGreen">#008577</color>
     <color name="myRed">#ff5a5f</color>
+    <color name="myLightRed">#ff8c8c</color>
     <color name="mySolorSandLight">#ECDAAF</color>
     <color name="myColorSand">#EBCB94</color>
 </resources>
