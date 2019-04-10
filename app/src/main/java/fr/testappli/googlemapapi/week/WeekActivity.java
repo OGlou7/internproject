@@ -3,7 +3,6 @@ package fr.testappli.googlemapapi.week;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.content.Intent;
-import android.graphics.Camera;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -43,10 +42,6 @@ import fr.testappli.googlemapapi.models.Garage;
 
 public class WeekActivity extends BaseActivity {
 
-    private static final int WEEKEVENTFORM_UPDATE_REQUEST = 0;
-    private static final int WEEKEVENTFORM_ADD_REQUEST = 1;
-    private static final int WEEKEVENTFORM_DELETE_REQUEST = 2;
-
     private WeekView mWeekView = null;
     private ArrayList<WeekViewEvent> mNewEvents;
     private ArrayList<WeekViewEvent> mOldEvents;
@@ -80,7 +75,7 @@ public class WeekActivity extends BaseActivity {
         toolbar.setNavigationOnClickListener(v -> {
             ArrayList<WeekViewEvent> eventsToRemove = new ArrayList<>();
             for(WeekViewEvent weekViewEvent : mNewEvents)
-                if(weekViewEvent.getColor() != getResources().getColor(R.color.myRed))
+                if(weekViewEvent.getColor() != getColor(R.color.myRed))
                     eventsToRemove.add(weekViewEvent);
 
             for(WeekViewEvent weekViewEvent : eventsToRemove)
@@ -105,7 +100,7 @@ public class WeekActivity extends BaseActivity {
         Calendar dayClicked = Calendar.getInstance();
         dayClicked.setTimeInMillis(dayTimeClicked);
         mWeekView.goToDate(dayClicked);
-        mWeekView.setEventTextColor(getResources().getColor(R.color.myGreen));
+        mWeekView.setEventTextColor(getColor(R.color.myGreen));
         mWeekView.setEventTextSize(30);
         mWeekView.goToHour(8);
 
@@ -117,7 +112,7 @@ public class WeekActivity extends BaseActivity {
 
         // Event click listener
         mWeekView.setOnEventClickListener((event, eventRect) -> {
-            if (event.getColor() != getResources().getColor(R.color.myRed)) {
+            if (event.getColor() != getColor(R.color.myRed)) {
                 for (WeekViewEvent weekViewEvent : mNewEvents) {
                     if (Objects.equals(weekViewEvent.getId(), event.getId())) {
                         mNewEvents.remove(weekViewEvent);
@@ -145,12 +140,6 @@ public class WeekActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        /*if (requestCode == WEEKEVENTFORM_DELETE_REQUEST) {
-            Bundle BundleWeekViewEventToDelete = Objects.requireNonNull(data.getExtras()).getBundle("weekViewEventToDelete");
-            WeekViewEvent test = (WeekViewEvent) Objects.requireNonNull(Objects.requireNonNull(BundleWeekViewEventToDelete).getSerializable("weekViewEventToDelete"));
-            deleteNonAvailableTimeInFirestore(test);
-        }
-        mWeekView.notifyDatasetChanged();*/
     }
 
     @Override
@@ -169,7 +158,7 @@ public class WeekActivity extends BaseActivity {
         }
         String uuid = UUID.randomUUID().toString();
         WeekViewEvent event0 = new WeekViewEvent(uuid, "Adresse du Garage, Ville", dateToCalendar(startdate), dateToCalendar(enddate));
-        event0.setColor(getResources().getColor(R.color.myRed));
+        event0.setColor(getColor(R.color.myRed));
         weekViewEventList.add(event0);
         return weekViewEventList;
     }
@@ -249,7 +238,7 @@ public class WeekActivity extends BaseActivity {
                 return true;
             case R.id.action_save:
                 for(WeekViewEvent weekViewEvent : mNewEvents){
-                    weekViewEvent.setColor(getResources().getColor(R.color.myRed));
+                    weekViewEvent.setColor(getColor(R.color.myRed));
                 }
                 mWeekView.notifyDatasetChanged();
 

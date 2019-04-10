@@ -59,8 +59,8 @@ class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.V
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.setContext(contextAdapter);
         Garage data = garageDataList.get(position);
-        holder.address.setText(data.getAddress().split(",")[0]);
-        holder.city.setText(data.getAddress().split(",")[1]);
+        holder.address.setText(data.getAddress().split(", ")[0]);
+        holder.city.setText(data.getAddress().split(", ")[1].replaceAll("^[\\s\\.\\d]+", ""));
         holder.price.setText(String.format("%s€", String.valueOf(data.getPrice())));
         holder.itemView.setOnClickListener(v -> mClickListener.onItemClick(holder.itemView, position));
         holder.navigate.setOnClickListener(v -> mNavigationClickListener.onItemClick(holder.itemView, position));
@@ -90,13 +90,5 @@ class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.V
     @Override
     public int getItemCount() {
         return garageDataList.size();
-    }
-
-    int getGaragePositionByAddress(String address){
-        for(Garage garage : garageDataList){
-            if(garage.getAddress().equals(address))
-                return garageDataList.indexOf(garage);
-        }
-        return 0;
     }
 }

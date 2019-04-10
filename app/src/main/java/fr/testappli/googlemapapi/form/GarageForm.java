@@ -1,6 +1,7 @@
 package fr.testappli.googlemapapi.form;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -18,14 +19,16 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
-import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.libraries.places.api.Places;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -153,32 +156,21 @@ public class GarageForm extends BaseActivity {
         }
 
         // Initialize the AutocompleteSupportFragment.
-        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment_garage);
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment_garage);
 
-        Objects.requireNonNull(autocompleteFragment).setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        // Specify the types of place data to return.
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS));
 
+        // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onPlaceSelected(@NonNull Place place) {
-                String placeToSearch = place.getName();
-
-                Geocoder geocoder = new Geocoder(getBaseContext());
-                List<Address> addresses;
-
-                try {
-                    // Getting a maximum of 3 Addresses that matches the input text
-                    addresses = geocoder.getFromLocationName(placeToSearch, 2);
-                    if (addresses != null && !addresses.isEmpty()){
-                        selectedAddress = addresses.get(0).getAddressLine(0);
-                    }
-                } catch (Exception e) {
-                    Log.e("Error", "Address not found : ");
-                }
+            public void onPlaceSelected(Place place) {
+                selectedAddress = place.getAddress();
             }
 
             @Override
-            public void onError(@NonNull Status status) {
-                // TODO: Handle the error.
+            public void onError(Status status) {
                 Log.e("ERROR", "An error occurred: " + status);
             }
         });
@@ -199,7 +191,6 @@ public class GarageForm extends BaseActivity {
                     + np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + " à "
                     + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()], Toast.LENGTH_SHORT).show();
 
-
             createGarageInFirestore(selectedAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
             finish();
         });
@@ -216,4 +207,19 @@ public class GarageForm extends BaseActivity {
         GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
         GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);
     }
+
+    // Method to get address from latitude and longitude
+    public static Address getAddressFromLatLong(Context context, double lat, double lng) {
+        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+
+        List<Address> list;
+        try {
+            list = geocoder.getFromLocation(lat, lng, 10);
+            return list.get(0);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
+

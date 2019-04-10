@@ -55,6 +55,9 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -114,6 +117,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             EasyPermissions.requestPermissions(this, getString(R.string.popup_title_permission_files_access), RC_IMAGE_PERMS, PERMS);
             return;
         }
+
+
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        firestore.setFirestoreSettings(settings);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
         configureToolbar();
         configureDrawerLayout();
@@ -190,24 +201,18 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
     void displayAllAvailableGaragesForUser(String user_uid){
         // Get All Garages
-        ArrayList<Garage> garageArrayList = new ArrayList<>();
         GarageHelper.getAllGarageForUser(user_uid).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
                             Garage garage = document.toObject(Garage.class);
                             if(garage.getisAvailable()) {
-                                garageArrayList.add(garage);
                                 garagesDisplayedInRecyclerView.add(garage);
                             }
                         }
                     } else {
                         Log.d("displayAllAvailable", "Error getting documents: ", task.getException());
                     }
-                    ArrayList<String> addressList = new ArrayList<>();
-                    for(Garage garage : garageArrayList)
-                        addressList.add(garage.getAddress());
-                    setAddressMarkers(addressList);
                     if(task.isComplete()) {
                         if(--nbOfUser == 0){
                             createGarageRecyclerView(garagesDisplayedInRecyclerView);
@@ -218,6 +223,10 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     void createGarageRecyclerView(ArrayList<Garage> garageArrayList){
+        ArrayList<String> addressToMark = new ArrayList<>();
+        for(Garage garage : garageArrayList) addressToMark.add(garage.getAddress());
+        setAddressMarkers(addressToMark);
+
         LinearLayoutManager horizontalLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
 
         recyclerView.setLayoutManager(horizontalLayoutManager);
@@ -270,25 +279,12 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         // Initialize the AutocompleteSupportFragment.
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
-        Objects.requireNonNull(autocompleteFragment).setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        Objects.requireNonNull(autocompleteFragment).setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG));
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
-                String placeToSearch = place.getName();
-
-                Geocoder geocoder = new Geocoder(getBaseContext());
-                List<Address> addresses;
-
-                try {
-                    // Getting a maximum of 3 Addresses that matches the input text
-                    addresses = geocoder.getFromLocationName(placeToSearch, 2);
-                    if (addresses != null && !addresses.isEmpty()){
-                        search(addresses);
-                    }
-                } catch (Exception e) {
-                    Log.e("Error", "Address not found : ");
-                }
+                search(place);
             }
 
             @Override
@@ -561,23 +557,17 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
 
     // Method to add marker on map on the given address
-    protected void search(List<Address> addresses) {
+    protected void search(Place place) {
+        LatLng latLng = place.getLatLng();
 
-        Address address = addresses.get(0);
-
-        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-
-        String addressText = String.format(
-                "%s, %s",
-                address.getMaxAddressLineIndex() > 0 ? address
-                        .getAddressLine(0) : "", address.getCountryName());
+        String addressText = place.getAddress();
 
         MarkerOptions markerOptions = new MarkerOptions();
 
         markerOptions.position(latLng);
         markerOptions.title(addressText);
 
-        googleMap.addMarker(markerOptions).setTitle(addresses.get(0).getAddressLine(0));
+        googleMap.addMarker(markerOptions).setTitle(addressText);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
     }
