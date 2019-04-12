@@ -55,8 +55,8 @@ public class GarageListAdapter extends FirestoreRecyclerAdapter<Garage, GarageLi
 
     @Override
     protected void onBindViewHolder(@NonNull GarageViewHolder holder, int position, @NonNull Garage model) {
-        String address = model.getAddress().split(",")[0];
-        String city = model.getAddress().split(",")[1];
+        String address = model.getAddress().split(", ")[0];
+        String city = model.getAddress().split(", ")[1];
         //holder.tv_row_description.setText(model.getDescription());
         holder.tv_row_garage_address.setText(String.format("%s%s%s", address, System.lineSeparator(), city));
         holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(model));

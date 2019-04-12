@@ -15,10 +15,11 @@ import static fr.testappli.googlemapapi.week.WeekActivity.dateToCalendar;
 public class Garage implements java.io.Serializable{
     private String uid;
     private String address;
-    @Nullable
-    private String description;
+    @Nullable private String description;
     private double price;
     private boolean isAvailable;
+    private String rentalTime;
+
 
     public Garage() { }
 
@@ -28,14 +29,16 @@ public class Garage implements java.io.Serializable{
         this.description = garage.getDescription();
         this.price = garage.getPrice();
         this.isAvailable = garage.getisAvailable();
+        this.rentalTime = garage.getRentalTime();
     }
 
-    public Garage(String uid, String address, @Nullable String description, double price) {
+    public Garage(String uid, String address, @Nullable String description, double price, String rentalTime) {
         this.uid = uid;
         this.address = address;
         this.description = description;
         this.price = price;
         this.isAvailable = false;
+        this.rentalTime = rentalTime;
     }
 
     // --- GETTERS ---
@@ -44,6 +47,7 @@ public class Garage implements java.io.Serializable{
     public @Nullable String getDescription() { return description; }
     public double getPrice() { return price; }
     public boolean getisAvailable() { return isAvailable; }
+    public String getRentalTime() { return rentalTime; }
 
     // --- SETTERS ---
     public void setUid(String uid) { this.uid = uid; }
@@ -51,4 +55,5 @@ public class Garage implements java.io.Serializable{
     public void setDescription(@Nullable String description) { this.description = description; }
     public void setPrice(double price) { this.price = price; }
     public void setReserved(boolean isAvailable) { this.isAvailable = isAvailable; }
+    public void setRentalTime(String rentalTime) { this.rentalTime = rentalTime; }
 }

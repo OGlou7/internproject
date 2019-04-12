@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_today"
-        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:icon="@drawable/ic_today"
         android:title="@string/gototoday"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/action_save"
-        android:icon="@android:drawable/ic_menu_save"
-        android:title="@string/gototoday"
+        android:id="@+id/action_add_event"
+        android:icon="@drawable/ic_add"
+        android:title="@string/add_event"
         app:showAsAction="ifRoom" />
 </menu>

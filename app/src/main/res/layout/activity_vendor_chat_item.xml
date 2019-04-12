@@ -28,7 +28,7 @@
             android:id="@+id/activity_vendor_chat_item_profile_container_is_vendor_image"
             android:layout_width="15dip"
             android:layout_height="15dip"
-            app:srcCompat="@drawable/ic_action_refresh"/>
+            app:srcCompat="@drawable/green_circle"/>
 
     </LinearLayout>
 

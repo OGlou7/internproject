@@ -26,8 +26,8 @@ public class GarageHelper {
 
     // --- CREATE ---
 
-    public static Task<Void> createGarageForUser(String user_uid, String garage_uid, String address, String description, double price){
-        Garage garageToCreate = new Garage(garage_uid, address, description, price);
+    public static Task<Void> createGarageForUser(String user_uid, String garage_uid, String address, String description, double price, String rentalTime){
+        Garage garageToCreate = new Garage(garage_uid, address, description, price, rentalTime);
         return GarageHelper.getGaragesCollection(user_uid)
                 .document(garage_uid)
                 .set(garageToCreate);
@@ -65,6 +65,12 @@ public class GarageHelper {
         return GarageHelper.getGaragesCollection(userID)
                 .document(garageID)
                 .update("price", price);
+    }
+
+    public static Task<Void> updateRentalTime(String userID, String garageID, String rentalTime) {
+        return GarageHelper.getGaragesCollection(userID)
+                .document(garageID)
+                .update("rentalTime", rentalTime);
     }
 
     // --- DELETE ---

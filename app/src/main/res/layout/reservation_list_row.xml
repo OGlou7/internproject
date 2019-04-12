@@ -24,10 +24,12 @@
             android:layout_toEndOf="@+id/iv_image"
             android:layout_width = "wrap_content"
             android:layout_height = "wrap_content"
-            android:gravity = "center"
+            android:maxLines="1"
+            android:gravity = "start"
             android:textSize = "@dimen/largeText"
             android:textColor = "@color/quantum_grey500"
             android:text="Address"/>
+
         <TextView
             android:id = "@+id/tv_city"
             android:layout_toEndOf="@+id/iv_image"
@@ -37,7 +39,8 @@
             android:gravity = "center"
             android:textSize = "@dimen/largeText"
             android:textColor = "@color/quantum_grey500"
-            android:text="Country" />
+            android:text="City" />
+
         <TextView
             android:id = "@+id/tv_price"
             android:layout_below="@+id/tv_city"
@@ -48,14 +51,6 @@
             android:textSize = "@dimen/xlargeText"
             android:textColor = "@color/myRed"
             android:text="Price" />
-        <!--<ImageView
-            android:id="@+id/iv_navigate"
-            android:layout_below="@+id/tv_city"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_round_navigation"
-            android:tint="@color/toolbar_icon_color"/>-->
 
 
         <android.support.design.widget.FloatingActionButton
@@ -65,7 +60,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/smallMargin"
             android:layout_marginEnd="@dimen/smallMargin"
-            android:src="@drawable/ic_round_navigation"
+            android:src="@drawable/ic_card_travel"
+            android:tint="@color/colorWhite"
             android:layout_alignParentEnd="true"
             app:backgroundTint="@color/myRed"
             app:borderWidth="0dp"

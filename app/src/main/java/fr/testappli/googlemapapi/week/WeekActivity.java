@@ -46,7 +46,6 @@ public class WeekActivity extends BaseActivity {
     private ArrayList<WeekViewEvent> mNewEvents;
     private ArrayList<WeekViewEvent> mOldEvents;
     private Garage garageClicked;
-    private ArrayList<WeekViewEvent> eventToSave = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -73,15 +72,6 @@ public class WeekActivity extends BaseActivity {
 
         // discard changes
         toolbar.setNavigationOnClickListener(v -> {
-            ArrayList<WeekViewEvent> eventsToRemove = new ArrayList<>();
-            for(WeekViewEvent weekViewEvent : mNewEvents)
-                if(weekViewEvent.getColor() != getColor(R.color.myRed))
-                    eventsToRemove.add(weekViewEvent);
-
-            for(WeekViewEvent weekViewEvent : eventsToRemove)
-                mNewEvents.remove(weekViewEvent);
-            mWeekView.notifyDatasetChanged();
-
             ArrayList<WeekViewEvent> nonAvailableDaysList = new ArrayList<>(mNewEvents);
 
             Intent data = new Intent();
@@ -147,19 +137,33 @@ public class WeekActivity extends BaseActivity {
 
     private List<WeekViewEvent> getEvents(int newYear, int newMonth) {
         ArrayList<WeekViewEvent> weekViewEventList = new ArrayList<>();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        Date startdate = null;
-        Date enddate = null;
-        try {
-            startdate = format.parse("2019-"+ String.valueOf(newMonth)+"-28T12:30Z");
-            enddate = format.parse("2019-"+ String.valueOf(newMonth)+"-29T12:30Z");
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if(!garageClicked.getRentalTime().equals("")) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+
+            Date startdate = null;
+            Date enddate = null;
+
+            Calendar test = Calendar.getInstance();
+            test.set(Calendar.MONTH, newMonth + 1);
+            test.set(Calendar.DAY_OF_MONTH, 1);
+
+            String startRentalTime = garageClicked.getRentalTime().split("/")[0];
+            String endRentalTime = garageClicked.getRentalTime().split("/")[1];
+
+            int daysInMonth = test.getActualMaximum(Calendar.DAY_OF_MONTH);
+            for (int i = 1; i <= daysInMonth; i++) {
+                try {
+                    startdate = format.parse(String.valueOf(newYear) + "-" + String.valueOf(newMonth) + "-" + String.valueOf(i) + "T" + endRentalTime + "Z");
+                    enddate = format.parse(String.valueOf(newYear) + "-" + String.valueOf(newMonth) + "-" + String.valueOf(i + 1) + "T" + startRentalTime + "Z");
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                String uuid = UUID.randomUUID().toString();
+                WeekViewEvent event0 = new WeekViewEvent(uuid, "", dateToCalendar(startdate), dateToCalendar(enddate));
+                event0.setColor(getColor(R.color.myLightGrey));
+                weekViewEventList.add(event0);
+            }
         }
-        String uuid = UUID.randomUUID().toString();
-        WeekViewEvent event0 = new WeekViewEvent(uuid, "Adresse du Garage, Ville", dateToCalendar(startdate), dateToCalendar(enddate));
-        event0.setColor(getColor(R.color.myRed));
-        weekViewEventList.add(event0);
         return weekViewEventList;
     }
 
@@ -236,18 +240,8 @@ public class WeekActivity extends BaseActivity {
             case R.id.action_today:
                 mWeekView.goToToday();
                 return true;
-            case R.id.action_save:
-                for(WeekViewEvent weekViewEvent : mNewEvents){
-                    weekViewEvent.setColor(getColor(R.color.myRed));
-                }
-                mWeekView.notifyDatasetChanged();
-
-                for(WeekViewEvent weekViewEvent : mNewEvents) {
-                    if(!eventToSave.contains(weekViewEvent)){
-                        eventToSave.add(weekViewEvent);
-                        createNonAvailableTimeInFirestore(weekViewEvent);
-                    }
-                }
+            case R.id.action_add_event:
+                addEvent(Calendar.getInstance());
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -376,8 +370,10 @@ public class WeekActivity extends BaseActivity {
                 Toast.makeText(getApplicationContext(), "Start is before end !", Toast.LENGTH_SHORT).show();
                 return;
             }
+            event.setColor(getColor(R.color.myRed));
 
             mNewEvents.add(event);
+            createNonAvailableTimeInFirestore(event);
             mWeekView.notifyDatasetChanged();
 
             mPopupWindow.dismiss();

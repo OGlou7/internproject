@@ -1,10 +1,7 @@
 package fr.testappli.googlemapapi.form;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,7 +17,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.libraries.places.api.Places;
@@ -28,7 +24,6 @@ import com.google.android.libraries.places.api.Places;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,6 +37,7 @@ public class GarageForm extends BaseActivity {
     private RelativeLayout layoutPeriod;
     private NumberPicker np_starttimepicker;
     private NumberPicker np_endtimepicker;
+    private CheckBox cb_rent_all_day;
 
     @Override
     public int getFragmentLayout() { return R.layout.activity_profile; }
@@ -74,7 +70,7 @@ public class GarageForm extends BaseActivity {
         layoutPeriod = findViewById(R.id.layoutPeriod);
         layoutPeriod.setVisibility(View.GONE);
 
-        CheckBox cb_rent_all_day = findViewById(R.id.cb_rent_all_day);
+        cb_rent_all_day = findViewById(R.id.cb_rent_all_day);
         cb_rent_all_day.setOnClickListener(v -> {
             if(cb_rent_all_day.isChecked()){
                 layoutPeriod.setVisibility(View.GONE);
@@ -104,7 +100,6 @@ public class GarageForm extends BaseActivity {
     }
 
     public void modifyGarage(){
-
         Bundle bundleGarage = Objects.requireNonNull(getIntent().getExtras()).getBundle("garageClicked");
         Garage garage = (Garage) Objects.requireNonNull(Objects.requireNonNull(bundleGarage).getSerializable("garageClicked"));
 
@@ -117,6 +112,19 @@ public class GarageForm extends BaseActivity {
         ImageButton ib_cross = findViewById(R.id.ib_cross);
         ib_cross.setOnClickListener(view -> finish());
 
+        if(!garage.getRentalTime().equals("")) {
+            cb_rent_all_day.setChecked(false);
+            layoutPeriod.setVisibility(View.VISIBLE);
+
+            int startIndex = (Integer.valueOf(garage.getRentalTime().split("/")[0].split(":")[0]) * 2)
+                    + (Integer.valueOf(garage.getRentalTime().split("/")[0].split(":")[1]) == 30 ? 1 : 0);
+
+            int endIndex = (Integer.valueOf(garage.getRentalTime().split("/")[1].split(":")[0]) * 2)
+                    + (Integer.valueOf(garage.getRentalTime().split("/")[1].split(":")[1]) == 30 ? 1 : 0);
+
+            np_starttimepicker.setValue(startIndex);
+            np_endtimepicker.setValue(endIndex);
+        }
 
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment) getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment_garage);
         Objects.requireNonNull(Objects.requireNonNull(autocompleteFragment).getView()).setVisibility(View.GONE);
@@ -133,14 +141,16 @@ public class GarageForm extends BaseActivity {
                 return;
             }
 
-            updateGarageInFirestore(garage.getUid(), garage.getAddress(), et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
+            String rentalTime = cb_rent_all_day.isChecked() ? "" :
+                    np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + "/" + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()];
+
+            updateGarageInFirestore(garage.getUid(), garage.getAddress(), et_description.getText().toString(), Double.valueOf(et_price.getText().toString()), rentalTime);
             finish();
         });
     }
 
 
     void addGarage(){
-
         EditText et_description = findViewById(R.id.et_description);
         EditText et_address = findViewById(R.id.et_address);
         EditText et_price = findViewById(R.id.et_price);
@@ -160,19 +170,15 @@ public class GarageForm extends BaseActivity {
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment_garage);
 
         // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS));
+        Objects.requireNonNull(autocompleteFragment).setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS));
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onPlaceSelected(Place place) {
-                selectedAddress = place.getAddress();
-            }
+            public void onPlaceSelected(@NonNull Place place) { selectedAddress = place.getAddress(); }
 
             @Override
-            public void onError(Status status) {
-                Log.e("ERROR", "An error occurred: " + status);
-            }
+            public void onError(@NonNull Status status) { Log.e("ERROR", "An error occurred: " + status); }
         });
 
         Button b_register = findViewById(R.id.b_register);
@@ -191,35 +197,25 @@ public class GarageForm extends BaseActivity {
                     + np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + " à "
                     + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()], Toast.LENGTH_SHORT).show();
 
-            createGarageInFirestore(selectedAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()));
+            String rentalTime = cb_rent_all_day.isChecked() ? "" :
+                    np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + "/" + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()];
+
+            createGarageInFirestore(selectedAddress, et_description.getText().toString(), Double.valueOf(et_price.getText().toString()), rentalTime);
             finish();
         });
     }
 
     // REST REQUEST
-    private void createGarageInFirestore(String address, @Nullable String description, double price){
+    private void createGarageInFirestore(String address, @Nullable String description, double price, String rentalTime){
         String uuid = UUID.randomUUID().toString();
-        GarageHelper.createGarageForUser(Objects.requireNonNull(getCurrentUser()).getUid(), uuid, address, description, price).addOnFailureListener(this.onFailureListener());
+        GarageHelper.createGarageForUser(Objects.requireNonNull(getCurrentUser()).getUid(), uuid, address, description, price, rentalTime).addOnFailureListener(this.onFailureListener());
     }
 
-    private void updateGarageInFirestore(String garageID, String address,String description,double price){
+    private void updateGarageInFirestore(String garageID, String address,String description,double price, String rentalTime){
         GarageHelper.updateAddress(Objects.requireNonNull(getCurrentUser()).getUid(), garageID, address);
         GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
         GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);
-    }
-
-    // Method to get address from latitude and longitude
-    public static Address getAddressFromLatLong(Context context, double lat, double lng) {
-        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-
-        List<Address> list;
-        try {
-            list = geocoder.getFromLocation(lat, lng, 10);
-            return list.get(0);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return null;
+        GarageHelper.updateRentalTime(getCurrentUser().getUid(), garageID, rentalTime);
     }
 }
 

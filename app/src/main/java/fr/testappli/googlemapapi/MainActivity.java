@@ -70,6 +70,7 @@ import fr.testappli.googlemapapi.api.GarageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.auth.ProfileActivity;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.form.ReservationForm;
 import fr.testappli.googlemapapi.garage.GarageActivity;
 import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
@@ -102,6 +103,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     // INTENT REQUEST
     public final static int PROFILEACTIVITY_REQUEST = 2;
     public final static int GARAGEACTIVITY_REQUEST = 3;
+    public final static int RESERVATIONFORM_REQUEST = 4;
 
 
     private boolean firstCreateFlag = true;
@@ -243,11 +245,16 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         // Navigation button adaptater click listener
         adapter2.setNavigationClickListener((view, position) -> {
             Garage garageClicked = adapter2.getItem(position);
-            String url = "http://maps.google.com/maps?saddr=" +
+            /*String url = "http://maps.google.com/maps?saddr=" +
                     currentLocation.getLatitude() + "," + currentLocation.getLongitude() + "&daddr=" +
                     garageClicked.getAddress().replace(" ", "+");
             Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
+            startActivity(intent);*/
+            Intent calendarActivity = new Intent(MainActivity.this, ReservationForm.class);
+            Bundle bundleGarage = new Bundle();
+            bundleGarage.putSerializable("garageClicked", garageClicked);
+            calendarActivity.putExtra("garageClicked", bundleGarage);
+            startActivityForResult(calendarActivity, RESERVATIONFORM_REQUEST);
         });
         recyclerView.setAdapter(adapter2);
     }
@@ -512,7 +519,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             }
             showMarker(currentLocation);
             Address currentAddress = getAddressFromLatLong(getApplicationContext(), currentLocation.getLatitude(), currentLocation.getLongitude());
-            Toast.makeText(getApplicationContext(), Objects.requireNonNull(currentAddress).getAddressLine(0), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(), Objects.requireNonNull(currentAddress).getAddressLine(0), Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -564,7 +571,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
         MarkerOptions markerOptions = new MarkerOptions();
 
-        markerOptions.position(latLng);
+        markerOptions.position(Objects.requireNonNull(latLng));
         markerOptions.title(addressText);
 
         googleMap.addMarker(markerOptions).setTitle(addressText);
@@ -611,23 +618,3 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

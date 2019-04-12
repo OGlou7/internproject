@@ -87,4 +87,11 @@
     <!-- NAVIGATIONDRAWER -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- BRAINTREE PAYMENT -->
+    <string name="failed_token">Client Failed to retrieve token from server</string>
+    <string name="BraintreeFragment_initialized">BraintreeFragment is ready to use</string>
+    <string name="issues_with_authorization">There was an issue with your authorization string</string>
+    <string name="token_failed">Fail to retrieve client token </string>
+    <string name="buy_now">BUY NOW</string>
 </resources>
