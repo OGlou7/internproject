@@ -101,7 +101,7 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
             // Check if the ImageView is set
             if (this.imageViewPreview.getDrawable() == null) {
                 // SEND A TEXT MESSAGE
-                MessageHelper.createMessageForChat(editTextMessage.getText().toString(), this.currentChatName, modelCurrentUser).addOnFailureListener(this.onFailureListener());
+                //MessageHelper.createMessageForChat(editTextMessage.getText().toString(), this.currentChatName, modelCurrentUser).addOnFailureListener(this.onFailureListener());
                 this.editTextMessage.setText("");
             } else {
                 // SEND A IMAGE + TEXT IMAGE
@@ -185,7 +185,7 @@ public class VendorChatActivity extends BaseActivity implements VendorChatAdapte
         //Track current chat name
         this.currentChatName = chatName;
         //Configure Adapter & RecyclerView
-        this.vendorChatAdapter = new VendorChatAdapter(generateOptionsForAdapter(MessageHelper.getAllMessageForChat(this.currentChatName)), Glide.with(this), this, this.getCurrentUser().getUid());
+        this.vendorChatAdapter = new VendorChatAdapter(generateOptionsForAdapter(MessageHelper.getLastMessageForChat(this.currentChatName)), Glide.with(this), this, this.getCurrentUser().getUid());
         vendorChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {

@@ -140,18 +140,6 @@ public class CalendarActivity extends BaseActivity {
         return daysBetween;
     }
 
-    public Date stringToDate(String stringDatum) {
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
-
-        try {
-            return format.parse(stringDatum);
-        }
-        catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public static Calendar getDatePart(Date date){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -182,15 +170,21 @@ public class CalendarActivity extends BaseActivity {
                         ArrayList<WeekViewEvent> newWeekNewEvent = listNonAvailableToListWeekViewEvent(nonAvailableTimesList);
                         nonAvailableDaysList.addAll(newWeekNewEvent);
                         for(WeekViewEvent weekViewEvent : newWeekNewEvent) {
-                            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getStartTime()))){
-                                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getStartTime()));
-                            }
-                            if(!nonAvailableCalendarList.contains(resetCalendar(weekViewEvent.getEndTime()))) {
-                                nonAvailableCalendarList.add(resetCalendar(weekViewEvent.getEndTime()));
+                            Calendar startCal = resetCalendar((Calendar)weekViewEvent.getStartTime().clone());
+                            Calendar endCal = resetCalendar((Calendar)weekViewEvent.getEndTime().clone());
+                            endCal.add(Calendar.DAY_OF_YEAR,1);
+
+                            while(startCal.before(endCal)){
+                                Calendar catToAdd = (Calendar)startCal.clone();
+                                if(!nonAvailableCalendarList.contains(catToAdd)){
+                                    nonAvailableCalendarList.add(catToAdd);
+                                }
+                                startCal.add(Calendar.DAY_OF_YEAR,1);
                             }
                         }
-                        for(Calendar calendar : nonAvailableCalendarList)
+                        for(Calendar calendar : nonAvailableCalendarList) {
                             events.add(new EventDay(calendar, R.drawable.reservation));
+                        }
                         calendarView.setEvents(events);
                     } else {
                         Log.e("ERROR : getAllNonAvailableTimeForGarage", "Error getting documents: ", task.getException());

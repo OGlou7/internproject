@@ -243,6 +243,15 @@ public class WeekActivity extends BaseActivity {
             case R.id.action_add_event:
                 addEvent(Calendar.getInstance());
                 return true;
+            case R.id.action_1:
+                mWeekView.setNumberOfVisibleDays(1);
+                return true;
+            case R.id.action_3:
+                mWeekView.setNumberOfVisibleDays(3);
+                return true;
+            case R.id.action_7:
+                mWeekView.setNumberOfVisibleDays(5);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -276,7 +285,6 @@ public class WeekActivity extends BaseActivity {
 
 
     public void addEvent(Calendar timeClicked){
-        ArrayList<Calendar> selectedCalendarsOnPicker = new ArrayList<>();
         Calendar endCalendar = (Calendar) timeClicked.clone();
         endCalendar.add(Calendar.MINUTE, 30);
 
@@ -323,7 +331,6 @@ public class WeekActivity extends BaseActivity {
 
         // Handle Time Picker
         DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
-            selectedCalendarsOnPicker.addAll(calendars);
             tv_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
                     calendars.get(0).get(Calendar.MONTH) + 1,
                     calendars.get(0).get(Calendar.YEAR)));
@@ -345,28 +352,45 @@ public class WeekActivity extends BaseActivity {
         // Save new event
         Button b_weekevent_save = customView.findViewById(R.id.b_weekevent_save);
         b_weekevent_save.setOnClickListener(view -> {
-            Calendar startTime = timeClicked;
+            if(tv_week_startdate.getText().toString().equals("Start Date") || tv_week_enddate.getText().toString().equals("End Date  ")){
+                Toast.makeText(getApplicationContext(), "Veuillez entrer la date de début et de fin", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Calendar startTime = (Calendar)timeClicked.clone();
             startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
             startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
+            Log.d("WeekActivity444", "Start :" + startTime.getTime().toString());
 
-            Calendar endTime = endCalendar;
+            Calendar endTime = (Calendar)endCalendar.clone();
             endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
             endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
+            Log.d("WeekActivity555", "End :" + endTime.getTime().toString());
 
-            if(!selectedCalendarsOnPicker.isEmpty()) {
+            /*if(!selectedCalendarsOnPicker.isEmpty()) {
                 startTime = selectedCalendarsOnPicker.get(0);
                 startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
+                Log.d("TESTTEST666", String.valueOf(np_starttimepicker.getValue()/2));
+
                 startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
+                Log.d("TESTTEST666", String.valueOf(np_starttimepicker.getValue()%2==0?0:30));
+                Log.d("WeekActivity", "Start :" + startTime.getTime().toString());
 
                 endTime = selectedCalendarsOnPicker.get(selectedCalendarsOnPicker.size() - 1);
                 endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
+                Log.d("TESTTEST777", String.valueOf(np_endtimepicker.getValue()/2));
+
                 endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
-            }
+                Log.d("TESTTEST777", String.valueOf(np_endtimepicker.getValue()%2==0?0:30));
+                Log.d("WeekActivity", "End :" + endTime.getTime().toString());
+            }*/
 
             String uuid = UUID.randomUUID().toString();
             WeekViewEvent event = new WeekViewEvent(uuid,  garageClicked.getAddress(), startTime, endTime);
             if(!endTime.after(startTime)) {
                 Log.d("WeekActivity", "Start is before end !");
+                Log.d("WeekActivity", "Start :" + startTime.getTime().toString());
+                Log.d("WeekActivity", "End :" + endTime.getTime().toString());
                 Toast.makeText(getApplicationContext(), "Start is before end !", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -389,7 +413,6 @@ public class WeekActivity extends BaseActivity {
 
 
     public void modifyEvent(WeekViewEvent weekViewEvent){
-        ArrayList<Calendar> selectedCalendarsOnPicker = new ArrayList<>();
         LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 
         @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.new_weekevent_form,null);
@@ -441,7 +464,6 @@ public class WeekActivity extends BaseActivity {
 
         // Handle Time Picker
         DatePickerBuilder builder = new DatePickerBuilder(this, calendars -> {
-            selectedCalendarsOnPicker.addAll(calendars);
             tv_week_startdate.setText(String.format("%02d/%02d/%02d", calendars.get(0).get(Calendar.DAY_OF_MONTH),
                     calendars.get(0).get(Calendar.MONTH) + 1,
                     calendars.get(0).get(Calendar.YEAR)));
@@ -472,29 +494,22 @@ public class WeekActivity extends BaseActivity {
         });
 
         b_weekevent_save.setOnClickListener(view -> {
-            Calendar startTime = weekViewEvent.getStartTime();
+            Calendar startTime = Calendar.getInstance();
+            startTime.setTime(stringToDate(tv_week_startdate.getText().toString()));
+
             startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
             startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
 
-            Calendar endTime = weekViewEvent.getEndTime();
+            Calendar endTime = Calendar.getInstance();
+            endTime.setTime(stringToDate(tv_week_enddate.getText().toString()));
+
             endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
             endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
-
-            if(!selectedCalendarsOnPicker.isEmpty()) {
-                startTime = selectedCalendarsOnPicker.get(0);
-                startTime.set(Calendar.HOUR_OF_DAY, np_starttimepicker.getValue()/2);
-                startTime.set(Calendar.MINUTE, np_starttimepicker.getValue()%2==0?0:30);
-
-                endTime = selectedCalendarsOnPicker.get(selectedCalendarsOnPicker.size() - 1);
-                endTime.set(Calendar.HOUR_OF_DAY, np_endtimepicker.getValue()/2);
-                endTime.set(Calendar.MINUTE, np_endtimepicker.getValue()%2==0?0:30);
-            }
 
             if(endTime.after(startTime)) {
                 weekViewEvent.setStartTime(startTime);
                 weekViewEvent.setEndTime(endTime);
-            }
-            else {
+            } else {
                 Log.d("WeekActivity", "Start is before end !");
                 Toast.makeText(getApplicationContext(), "Start is before end !", Toast.LENGTH_SHORT).show();
             }
@@ -508,6 +523,18 @@ public class WeekActivity extends BaseActivity {
         mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+
+    public Date stringToDate(String stringDatum) {
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+
+        try {
+            return format.parse(stringDatum);
+        }
+        catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     // REST REQUEST

@@ -2,15 +2,17 @@ package fr.testappli.googlemapapi.form;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;/*
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -23,9 +25,10 @@ import com.braintreepayments.api.dropin.DropInRequest;
 import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.interfaces.HttpResponseCallback;
 import com.braintreepayments.api.internal.HttpClient;
-import com.braintreepayments.api.models.PaymentMethodNonce;*/
+import com.braintreepayments.api.models.PaymentMethodNonce;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import fr.testappli.googlemapapi.R;
@@ -37,6 +40,7 @@ public class ReservationForm  extends BaseActivity {
     private static final String API_CHECK_OUT = "PATH_TO_SERVER";
     private static final int PAYMENT_REQUEST = 1234;
 
+    ReservationForm context;
     String token;
     HashMap<String, String> paramsHash;
 
@@ -49,7 +53,7 @@ public class ReservationForm  extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        /*if(requestCode == PAYMENT_REQUEST){
+        if(requestCode == PAYMENT_REQUEST){
             if (RESULT_OK == resultCode){
                 DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
                 PaymentMethodNonce paymentNonce = result.getPaymentMethodNonce();
@@ -66,7 +70,7 @@ public class ReservationForm  extends BaseActivity {
         } else {
             Exception error = (Exception)data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
             Log.e("ERROR123456", error.toString());
-        }*/
+        }
     }
 
 
@@ -78,14 +82,14 @@ public class ReservationForm  extends BaseActivity {
         Intent intent = getIntent();
         Bundle bundleGarage = Objects.requireNonNull(intent.getExtras()).getBundle("garageClicked");
         garageClicked = (Garage) Objects.requireNonNull(Objects.requireNonNull(bundleGarage).getSerializable("garageClicked"));
+        context = this;
 
         configureUI();
-        //configureBrainTree();
+        configureBrainTree();
     }
 
 
-    /*private void configureBrainTree(){
-        //new getToken.execute();
+    private void configureBrainTree(){
         tv_price.setOnClickListener(v -> submitPayment());
 
     }
@@ -93,7 +97,7 @@ public class ReservationForm  extends BaseActivity {
     private void submitPayment() {
         DropInRequest dropInRequest = new DropInRequest().clientToken(token);
         startActivityForResult(dropInRequest.getIntent(getApplicationContext()), PAYMENT_REQUEST);
-    }*/
+    }
 
     private void configureUI(){
         TextView tv_address = findViewById(R.id.tv_address);
@@ -103,19 +107,21 @@ public class ReservationForm  extends BaseActivity {
         FloatingActionButton navigate = findViewById(R.id.iv_navigate);
 
         tv_address.setText(garageClicked.getAddress());
-        tv_price.setText(String.valueOf(garageClicked.getPrice()));
+        tv_price.setText(String.format("%s€", String.valueOf(garageClicked.getPrice())));
         tv_description.setText(garageClicked.getDescription());
-        b_register.setOnClickListener(v -> finish());
+        b_register.setOnClickListener(v -> new getToken().execute());
 
         navigate.setOnClickListener(v -> {
-            String url = "google.navigation:q=" +
-                    garageClicked.getAddress().replace(" ", "+");
+            String url = "http://maps.google.com/maps?&daddr=" +
+            garageClicked.getAddress().replace(" ", "+");
             Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         });
+
+
     }
 
-    /*private void sendPayments() {
+    private void sendPayments() {
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
         StringRequest stringRequest = new StringRequest(Request.Method.POST, API_CHECK_OUT, response -> {
             if(response.contains("Successful"))
@@ -145,17 +151,16 @@ public class ReservationForm  extends BaseActivity {
     }
 
     // Braintree Configuration
-
     private class getToken extends AsyncTask{
-        ProgressDialog mDialog;
-
+        AlertDialog ttest;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mDialog = new ProgressDialog(getApplicationContext(), android.R.style.Theme_DeviceDefault_Dialog);
-            mDialog.setCancelable(false);
-            mDialog.setMessage("Please Wait");
-            mDialog.show();
+            AlertDialog.Builder test = new AlertDialog.Builder(context)
+                    .setMessage("Veuillez Patienter");
+            test.show();
+            ttest = test.create();
+            ttest.show();
         }
 
         @Override
@@ -181,7 +186,7 @@ public class ReservationForm  extends BaseActivity {
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
-            mDialog.dismiss();
+            ttest.dismiss();
         }
-    }*/
+    }
 }

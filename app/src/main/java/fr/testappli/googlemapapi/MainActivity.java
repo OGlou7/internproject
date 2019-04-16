@@ -70,6 +70,7 @@ import fr.testappli.googlemapapi.api.GarageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.auth.ProfileActivity;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.chat.ChatActivity;
 import fr.testappli.googlemapapi.form.ReservationForm;
 import fr.testappli.googlemapapi.garage.GarageActivity;
 import fr.testappli.googlemapapi.models.Garage;
@@ -467,7 +468,8 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void startVendorChatActivity(){
-        Intent intent = new Intent(this, VendorChatActivity.class);
+        //Intent intent = new Intent(this, VendorChatActivity.class);
+        Intent intent = new Intent(this, ChatActivity.class);
         startActivity(intent);
     }
 

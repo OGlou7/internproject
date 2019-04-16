@@ -12,4 +12,14 @@
         android:icon="@drawable/ic_add"
         android:title="@string/add_event"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_1"
+        android:title="1 jour" />
+    <item
+        android:id="@+id/action_3"
+        android:title="3 jours" />
+    <item
+        android:id="@+id/action_7"
+        android:title="7 jours" />
 </menu>
