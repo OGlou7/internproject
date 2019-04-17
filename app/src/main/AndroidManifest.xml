@@ -120,9 +120,19 @@
 
         <!-- NOTIFICATION SERVICE -->
         <service
-            android:name=".notifications.NotificationsService">
+            android:name=".notifications.MyFirebaseMessaging">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".notifications.MyFirebaseIdService"
+            android:enabled="true"
+            android:stopWithTask="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
         </service>
 

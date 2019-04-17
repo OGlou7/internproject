@@ -29,7 +29,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     // ERROR HANDLER
 
     protected OnFailureListener onFailureListener(){
-        return e -> Toast.makeText(getApplicationContext(), getString(R.string.error_unknown_error), Toast.LENGTH_LONG).show();
+        return e -> Toast.makeText(getApplicationContext(), getString(R.string.error_unknown_error) + e.toString(), Toast.LENGTH_LONG).show();
     }
 
     public abstract int getFragmentLayout();

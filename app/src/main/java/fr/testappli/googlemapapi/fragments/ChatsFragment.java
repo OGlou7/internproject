@@ -4,15 +4,17 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,7 @@ import fr.testappli.googlemapapi.UserAdapter;
 import fr.testappli.googlemapapi.api.ChatHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.models.User;
+import fr.testappli.googlemapapi.notifications.Token;
 
 
 public class ChatsFragment extends Fragment {
@@ -48,31 +51,34 @@ public class ChatsFragment extends Fragment {
         usersList = new ArrayList<>();
 
         ChatHelper.getChatCollection().addSnapshotListener((queryDocumentSnapshots, e) -> {
-            Log.e("testtest88888", queryDocumentSnapshots.getDocuments().get(0).getId());
-        });
-
-        ChatHelper.getChatCollection().get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                usersList.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    if(document.getId().contains(fuser.getUid())){
-                        UserHelper.getUser(document.getId().replace(fuser.getUid(), "")).addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful()) {
-                                DocumentSnapshot documentUser = task1.getResult();
-                                usersList.add(documentUser.toObject(User.class));
-                            }
-                            if(task1.isComplete()) updateUI();
-                        });
-                    }
+            usersList.clear();
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                if(document.getId().contains(fuser.getUid())){
+                    UserHelper.getUser(document.getId().replace(fuser.getUid(), "")).addOnCompleteListener(task1 -> {
+                        if (task1.isSuccessful()) {
+                            DocumentSnapshot documentUser = task1.getResult();
+                            User user = documentUser.toObject(User.class);
+                            usersList.add(user);
+                        }
+                        if(task1.isComplete()) updateUI();
+                    });
                 }
-            } else {
-                Log.e("ERROR", "Error getting documents: ", task.getException());
             }
-
-            userAdapter = new UserAdapter(getContext(), usersList);
-            recyclerView.setAdapter(userAdapter);
         });
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String token = task.getResult().getToken();
+                        updateToken(token);
+                    }
+                });
         return view;
+    }
+
+    private void updateToken(String token){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
+        Token token1 = new Token(token);
+        reference.child(fuser.getUid()).setValue(token1);
     }
 
     private void updateUI(){

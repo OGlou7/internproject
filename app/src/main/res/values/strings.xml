@@ -79,6 +79,7 @@
     <!-- NOTIFICATION SERVICE -->
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="notification_title">"Vous avez reçu une notification"</string>
+    <string name="fcm_token">FCM Token: %s</string>
 
     <!-- GARAGE ACTIVITY -->
     <string name="popup_message_confirmation_delete_garage">Es-tu sûr(e) de vouloir supprimer ce garage ?</string>

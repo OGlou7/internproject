@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +12,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.List;
 
+import fr.testappli.googlemapapi.api.MessageHelper;
 import fr.testappli.googlemapapi.chat.MessageActivity;
+import fr.testappli.googlemapapi.models.Message2;
 import fr.testappli.googlemapapi.models.User;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
@@ -47,6 +60,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             Glide.with(mContext).load(user.getUrlPicture()).into(holder.profile_image);
         }
 
+
+        lastMessage(user.getUid(), holder.last_msg);
+
         holder.itemView.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, MessageActivity.class);
             intent.putExtra("userid", user.getUid());
@@ -77,26 +93,24 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             last_msg = itemView.findViewById(R.id.last_msg);
         }
     }
-/*
+
     //check for last message
     private void lastMessage(final String userid, final TextView last_msg){
         theLastMessage = "default";
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
+        String chatID = generateChatID(userid, firebaseUser.getUid());
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    Chat chat = snapshot.getValue(Chat.class);
-                    if (firebaseUser != null && chat != null) {
-                        if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid) ||
-                                chat.getReceiver().equals(userid) && chat.getSender().equals(firebaseUser.getUid())) {
-                            theLastMessage = chat.getMessage();
+        MessageHelper.getMessageCollectionForChat(chatID).addSnapshotListener((queryDocumentSnapshots, e) -> {
+            MessageHelper.getLastMessageForChat(chatID).get().addOnSuccessListener(queryDocumentSnapshots1 -> {
+                for (DocumentSnapshot document : queryDocumentSnapshots1.getDocuments()) {
+                    Message2 message = document.toObject(Message2.class);
+                    if (message != null) {
+                        if (message.getReceiver().equals(firebaseUser.getUid()) && message.getSender().equals(userid) ||
+                                message.getReceiver().equals(userid) && message.getSender().equals(firebaseUser.getUid())) {
+                            theLastMessage = message.getMessage();
                         }
                     }
                 }
-
                 switch (theLastMessage){
                     case  "default":
                         last_msg.setText("No Message");
@@ -108,12 +122,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                 }
 
                 theLastMessage = "default";
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
+            });
         });
-    }*/
+    }
+
+    private String generateChatID(String sender, String receiver){
+        return sender.compareTo(receiver) < 0 ? sender + receiver : receiver + sender;
+    }
 }

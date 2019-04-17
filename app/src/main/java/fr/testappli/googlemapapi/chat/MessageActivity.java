@@ -14,37 +14,41 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.database.core.SnapshotHolder;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import fr.testappli.googlemapapi.MessageAdapter;
 import fr.testappli.googlemapapi.R;
+import fr.testappli.googlemapapi.api.ChatHelper;
 import fr.testappli.googlemapapi.api.MessageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
+import fr.testappli.googlemapapi.fragments.APIService;
 import fr.testappli.googlemapapi.models.Message2;
 import fr.testappli.googlemapapi.models.User;
+import fr.testappli.googlemapapi.notifications.Client;
+import fr.testappli.googlemapapi.notifications.Data;
+import fr.testappli.googlemapapi.notifications.MyResponse;
+import fr.testappli.googlemapapi.notifications.Sender;
+import fr.testappli.googlemapapi.notifications.Token;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MessageActivity extends BaseActivity {
     CircleImageView profile_image;
@@ -56,7 +60,7 @@ public class MessageActivity extends BaseActivity {
     EditText text_send;
 
     MessageAdapter messageAdapter;
-    List<Message2> mMessage;
+    List<Message2> mMessage = new ArrayList<>();
 
 
     RecyclerView recyclerView;
@@ -67,7 +71,10 @@ public class MessageActivity extends BaseActivity {
 
     String userid;
 
-    ListenerRegistration reference;
+    ListenerRegistration listenerRegistration;
+
+    APIService apiService;
+    boolean notify = false;
 
     @Override
     public int getFragmentLayout() { return R.layout.activity_profile; }
@@ -76,13 +83,23 @@ public class MessageActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
+        configureToolbar();
+        configureUI();
+        configureMessages();
+
+        apiService = Client.getClient("https://fcm.googleapis.com/").create(APIService.class);
+    }
+
+    private void configureToolbar(){
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setNavigationOnClickListener(v -> finish());
+    }
 
+    private void configureUI(){
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -94,9 +111,25 @@ public class MessageActivity extends BaseActivity {
         btn_send = findViewById(R.id.btn_send);
         text_send = findViewById(R.id.text_send);
 
+        btn_send.setOnClickListener(v -> {
+            notify = true;
+            String message = text_send.getText().toString();
+            if(!message.isEmpty()){
+                sendMessage(fuser.getUid(), userid, message);
+            } else {
+                Toast.makeText(this, "You can't send empty message", Toast.LENGTH_SHORT).show();
+            }
+            text_send.setText("");
+        });
+    }
+
+    private void configureMessages(){
         intent = getIntent();
         userid = intent.getStringExtra("userid");
         fuser = getCurrentUser();
+
+        String chatID = generateChatID(userid, fuser.getUid());
+        ChatHelper.createChat(chatID).addOnFailureListener(this.onFailureListener());
 
         UserHelper.getUser(userid).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -109,22 +142,10 @@ public class MessageActivity extends BaseActivity {
                     Glide.with(getApplicationContext()).load(user.getUrlPicture()).into(profile_image);
                 }
             } else {
-                Log.e("configureMapPointers", "Error getting documents: ", task.getException());
+                Log.e("ERROR", "Error getting documents: ", task.getException());
             }
-
             readMesagges(fuser.getUid(), userid, getCurrentUser().getPhotoUrl() == null ? null : getCurrentUser().getPhotoUrl().toString());
         });
-
-        btn_send.setOnClickListener(v -> {
-            String message = text_send.getText().toString();
-            if(!message.isEmpty()){
-                sendMessage(fuser.getUid(), userid, message);
-            } else {
-                Toast.makeText(this, "You can't send empty message", Toast.LENGTH_SHORT).show();
-            }
-            text_send.setText("");
-        });
-
         seenMessage(userid);
     }
 
@@ -136,7 +157,6 @@ public class MessageActivity extends BaseActivity {
                     Message2 message = document.toObject(Message2.class);
 
                     if (message.getReceiver().equals(fuser.getUid()) && message.getSender().equals(userid)){
-                        Log.e("TESTTEST111", message.getMessage());
                         MessageHelper.updateIsSeen(generateChatID(fuser.getUid(), userid), document.getId(), true);
                     }
                 }
@@ -145,15 +165,84 @@ public class MessageActivity extends BaseActivity {
             }
         });
 
-        reference = MessageHelper.getMessageCollectionForChat(generateChatID(fuser.getUid(), userid)).addSnapshotListener(seenListener);
+        listenerRegistration = MessageHelper.getMessageCollectionForChat(generateChatID(fuser.getUid(), userid)).addSnapshotListener(seenListener);
     }
 
     private void sendMessage(String sender, String receiver, String message){
-        MessageHelper.createMessageForChat(message,generateChatID(sender, receiver) , sender, receiver);
+        String chatID = generateChatID(sender, receiver);
+        MessageHelper.createMessageForChat(message,chatID , sender, receiver);
+
+        final String msg = message;
+
+        UserHelper.getUser(fuser.getUid()).addOnCompleteListener(task -> {
+            if(task.isComplete()){
+                User user = task.getResult().toObject(User.class);
+                if (notify) {
+                    sendNotifiaction(receiver, user.getUsername(), msg);
+                }
+                notify = false;
+            }
+        });
+
+        /*DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users").child(fuser.getUid());
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if (notify) {
+                    sendNotifiaction(receiver, user.getUsername(), msg);
+                }
+                notify = false;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });*/
     }
 
+    private void sendNotifiaction(String receiver, final String username, final String message){
+        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
+        Query query = tokens.orderByKey().equalTo(receiver);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    Token token = snapshot.getValue(Token.class);
+                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username+": "+message, "New Message",
+                            userid);
+
+                    Sender sender = new Sender(data, token.getToken());
+
+                    apiService.sendNotification(sender)
+                            .enqueue(new Callback<MyResponse>() {
+                                @Override
+                                public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                                    if (response.code() == 200){
+                                        if (response.body().success != 1){
+                                            Toast.makeText(MessageActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<MyResponse> call, Throwable t) {
+                                    Log.e("ERROR", t.getMessage());
+                                }
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
     private void readMesagges(final String myid, final String userid, final String imageurl){
-        mMessage = new ArrayList<>();
         MessageHelper.getMessageCollectionForChat(generateChatID(fuser.getUid(), userid)).addSnapshotListener((queryDocumentSnapshots, e) -> {
             MessageHelper.getAllMessageForChat(generateChatID(fuser.getUid(), userid)).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
@@ -175,6 +264,7 @@ public class MessageActivity extends BaseActivity {
         });
     }
 
+
     private String generateChatID(String sender, String receiver){
         return sender.compareTo(receiver) < 0 ? sender + receiver : receiver + sender;
     }
@@ -182,6 +272,6 @@ public class MessageActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        reference.remove();
+        listenerRegistration.remove();
     }
 }

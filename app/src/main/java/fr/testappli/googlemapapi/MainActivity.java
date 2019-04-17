@@ -75,7 +75,6 @@ import fr.testappli.googlemapapi.form.ReservationForm;
 import fr.testappli.googlemapapi.garage.GarageActivity;
 import fr.testappli.googlemapapi.models.Garage;
 import fr.testappli.googlemapapi.models.User;
-import fr.testappli.googlemapapi.vendor_chat.VendorChatActivity;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends BaseActivity implements OnMapReadyCallback {
@@ -120,7 +119,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             EasyPermissions.requestPermissions(this, getString(R.string.popup_title_permission_files_access), RC_IMAGE_PERMS, PERMS);
             return;
         }
-
 
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()

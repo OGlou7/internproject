@@ -1,8 +1,5 @@
 package fr.testappli.googlemapapi.form;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -10,12 +7,10 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
@@ -177,7 +172,7 @@ public class ReservationForm  extends BaseActivity {
 
                 @Override
                 public void failure(Exception exception) {
-                    Log.e("TESTTEST444", exception.toString());
+                    Log.e("ERROR", exception.toString());
                 }
             });
             return null;

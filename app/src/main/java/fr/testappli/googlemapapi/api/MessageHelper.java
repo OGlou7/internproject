@@ -19,8 +19,8 @@ public class MessageHelper {
         return ChatHelper.getChatCollection()
                 .document(chat)
                 .collection(COLLECTION_NAME)
-                .orderBy("dateCreated")
-                .limit(50);
+                .orderBy("dateCreated", Query.Direction.DESCENDING)
+                .limit(1);
     }
 
     public static Task<QuerySnapshot> getAllMessageForChat(String chat){
