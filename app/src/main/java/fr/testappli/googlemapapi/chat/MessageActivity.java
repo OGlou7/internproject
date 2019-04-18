@@ -1,6 +1,7 @@
 package fr.testappli.googlemapapi.chat;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import fr.testappli.googlemapapi.MessageAdapter;
+import fr.testappli.googlemapapi.adapter.MessageAdapter;
 import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.ChatHelper;
 import fr.testappli.googlemapapi.api.MessageHelper;
@@ -128,14 +129,14 @@ public class MessageActivity extends BaseActivity {
         userid = intent.getStringExtra("userid");
         fuser = getCurrentUser();
 
-        String chatID = generateChatID(userid, fuser.getUid());
+        String chatID = generateChatID(userid, Objects.requireNonNull(fuser).getUid());
         ChatHelper.createChat(chatID).addOnFailureListener(this.onFailureListener());
 
         UserHelper.getUser(userid).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
-                User user = document.toObject(User.class);
-                username.setText(user.getUsername());
+                User user = Objects.requireNonNull(document).toObject(User.class);
+                username.setText(Objects.requireNonNull(user).getUsername());
                 if(user.getUrlPicture() == null){
                     profile_image.setImageResource(R.mipmap.ic_launcher);
                 } else {
@@ -153,11 +154,11 @@ public class MessageActivity extends BaseActivity {
         seenListener = (documentSnapshot, e) -> MessageHelper.getAllMessageForChat(generateChatID(fuser.getUid(), userid)).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 mMessage.clear();
-                for (QueryDocumentSnapshot document : task.getResult()) {
+                for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
                     Message2 message = document.toObject(Message2.class);
 
                     if (message.getReceiver().equals(fuser.getUid()) && message.getSender().equals(userid)){
-                        MessageHelper.updateIsSeen(generateChatID(fuser.getUid(), userid), document.getId(), true);
+                        MessageHelper.updateIsSeen(generateChatID(fuser.getUid(), userid), document.getId(), true).addOnFailureListener(this.onFailureListener());
                     }
                 }
             } else {
@@ -170,36 +171,19 @@ public class MessageActivity extends BaseActivity {
 
     private void sendMessage(String sender, String receiver, String message){
         String chatID = generateChatID(sender, receiver);
-        MessageHelper.createMessageForChat(message,chatID , sender, receiver);
+        MessageHelper.createMessageForChat(message,chatID , sender, receiver).addOnFailureListener(this.onFailureListener());
 
         final String msg = message;
 
         UserHelper.getUser(fuser.getUid()).addOnCompleteListener(task -> {
             if(task.isComplete()){
-                User user = task.getResult().toObject(User.class);
+                User user = Objects.requireNonNull(task.getResult()).toObject(User.class);
                 if (notify) {
-                    sendNotifiaction(receiver, user.getUsername(), msg);
+                    sendNotifiaction(receiver, Objects.requireNonNull(user).getUsername(), msg);
                 }
                 notify = false;
             }
         });
-
-        /*DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users").child(fuser.getUid());
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                if (notify) {
-                    sendNotifiaction(receiver, user.getUsername(), msg);
-                }
-                notify = false;
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });*/
     }
 
     private void sendNotifiaction(String receiver, final String username, final String message){
@@ -213,21 +197,21 @@ public class MessageActivity extends BaseActivity {
                     Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username+": "+message, "New Message",
                             userid);
 
-                    Sender sender = new Sender(data, token.getToken());
+                    Sender sender = new Sender(data, Objects.requireNonNull(token).getToken());
 
                     apiService.sendNotification(sender)
                             .enqueue(new Callback<MyResponse>() {
                                 @Override
-                                public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                                public void onResponse(@NonNull Call<MyResponse> call, @NonNull Response<MyResponse> response) {
                                     if (response.code() == 200){
-                                        if (response.body().success != 1){
+                                        if (Objects.requireNonNull(response.body()).success != 1){
                                             Toast.makeText(MessageActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 }
 
                                 @Override
-                                public void onFailure(Call<MyResponse> call, Throwable t) {
+                                public void onFailure(@NonNull Call<MyResponse> call, @NonNull Throwable t) {
                                     Log.e("ERROR", t.getMessage());
                                 }
                             });
@@ -243,25 +227,30 @@ public class MessageActivity extends BaseActivity {
 
 
     private void readMesagges(final String myid, final String userid, final String imageurl){
-        MessageHelper.getMessageCollectionForChat(generateChatID(fuser.getUid(), userid)).addSnapshotListener((queryDocumentSnapshots, e) -> {
-            MessageHelper.getAllMessageForChat(generateChatID(fuser.getUid(), userid)).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    mMessage.clear();
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Message2 message = document.toObject(Message2.class);
-                        if (message.getReceiver().equals(myid) && message.getSender().equals(userid) ||
-                                message.getReceiver().equals(userid) && message.getSender().equals(myid)){
-                            mMessage.add(message);
-                        }
+        MessageHelper.getMessageCollectionForChat(generateChatID(fuser.getUid(), userid)).addSnapshotListener((queryDocumentSnapshots, e) ->
+                MessageHelper.getAllMessageForChat(generateChatID(fuser.getUid(), userid)).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        mMessage.clear();
+                        for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            Message2 message = document.toObject(Message2.class);
+                            if (message.getReceiver().equals(myid) && message.getSender().equals(userid) ||
+                                    message.getReceiver().equals(userid) && message.getSender().equals(myid)){
+                                mMessage.add(message);
+                            }
 
-                        messageAdapter = new MessageAdapter(MessageActivity.this, mMessage, imageurl);
-                        recyclerView.setAdapter(messageAdapter);
+                            messageAdapter = new MessageAdapter(MessageActivity.this, mMessage, imageurl);
+                            recyclerView.setAdapter(messageAdapter);
+                        }
+                    } else {
+                        Log.e("ERROR", "Error getting documents: ", task.getException());
                     }
-                } else {
-                    Log.e("ERROR", "Error getting documents: ", task.getException());
-                }
-            });
-        });
+        }));
+    }
+
+    private void currentUser(String userid){
+        SharedPreferences.Editor editor = getSharedPreferences("PREFS", MODE_PRIVATE).edit();
+        editor.putString("currentuser", userid);
+        editor.apply();
     }
 
 
@@ -270,8 +259,20 @@ public class MessageActivity extends BaseActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        currentUser(userid);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         listenerRegistration.remove();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        currentUser("none");
     }
 }

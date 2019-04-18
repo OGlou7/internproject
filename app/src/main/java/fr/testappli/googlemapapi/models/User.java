@@ -2,8 +2,6 @@ package fr.testappli.googlemapapi.models;
 
 import android.support.annotation.Nullable;
 
-import java.util.ArrayList;
-
 public class User implements java.io.Serializable{
 
     private String uid;

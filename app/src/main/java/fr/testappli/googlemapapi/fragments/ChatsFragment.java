@@ -1,9 +1,11 @@
 package fr.testappli.googlemapapi.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +20,10 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import fr.testappli.googlemapapi.R;
-import fr.testappli.googlemapapi.UserAdapter;
+import fr.testappli.googlemapapi.adapter.UserAdapter;
 import fr.testappli.googlemapapi.api.ChatHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.models.User;
@@ -31,14 +34,13 @@ public class ChatsFragment extends Fragment {
 
     private RecyclerView recyclerView;
 
-    private UserAdapter userAdapter;
-
     FirebaseUser fuser;
 
     private List<User> usersList;
+    int size;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chats, container, false);
 
@@ -51,24 +53,33 @@ public class ChatsFragment extends Fragment {
         usersList = new ArrayList<>();
 
         ChatHelper.getChatCollection().addSnapshotListener((queryDocumentSnapshots, e) -> {
-            usersList.clear();
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                if(document.getId().contains(fuser.getUid())){
-                    UserHelper.getUser(document.getId().replace(fuser.getUid(), "")).addOnCompleteListener(task1 -> {
-                        if (task1.isSuccessful()) {
-                            DocumentSnapshot documentUser = task1.getResult();
-                            User user = documentUser.toObject(User.class);
-                            usersList.add(user);
-                        }
-                        if(task1.isComplete()) updateUI();
-                    });
+            if(queryDocumentSnapshots != null) {
+                usersList.clear();
+                size = queryDocumentSnapshots.size();
+                Log.e("TESTTEST111", "CLEAR");
+                for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                    if (document.getId().contains(fuser.getUid())) {
+                        Log.e("TESTTEST112", document.getId().replace(fuser.getUid(), ""));
+                        UserHelper.getUser(document.getId().replace(fuser.getUid(), "")).addOnCompleteListener(task1 -> {
+                            if (task1.isSuccessful()) {
+                                DocumentSnapshot documentUser = task1.getResult();
+                                User user = Objects.requireNonNull(documentUser).toObject(User.class);
+                                Log.e("TESTTEST113", Objects.requireNonNull(user).getUsername());
+                                usersList.add(user);
+                            }
+                            if (task1.isComplete()) {
+                                size--;
+                                if (size == 1) updateUI();
+                            }
+                        });
+                    }
                 }
             }
         });
         FirebaseInstanceId.getInstance().getInstanceId()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        String token = task.getResult().getToken();
+                        String token = Objects.requireNonNull(task.getResult()).getToken();
                         updateToken(token);
                     }
                 });
@@ -82,7 +93,9 @@ public class ChatsFragment extends Fragment {
     }
 
     private void updateUI(){
-        userAdapter = new UserAdapter(getContext(), usersList);
+        for(User user : usersList)
+            Log.e("TESTTEST114", user.getUsername());
+        UserAdapter userAdapter = new UserAdapter(getContext(), usersList);
         recyclerView.setAdapter(userAdapter);
     }
 }

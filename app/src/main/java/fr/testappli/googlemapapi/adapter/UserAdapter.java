@@ -1,10 +1,9 @@
-package fr.testappli.googlemapapi;
+package fr.testappli.googlemapapi.adapter;
 
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,17 +13,11 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.List;
 
+import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.api.MessageHelper;
 import fr.testappli.googlemapapi.chat.MessageActivity;
 import fr.testappli.googlemapapi.models.Message2;
@@ -61,7 +54,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         }
 
 
-        lastMessage(user.getUid(), holder.last_msg);
+        lastMessage(user, holder.last_msg);
 
         holder.itemView.setOnClickListener(view -> {
             Intent intent = new Intent(mContext, MessageActivity.class);
@@ -79,8 +72,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         public TextView username;
         public ImageView profile_image;
-        private ImageView img_on;
-        private ImageView img_off;
         private TextView last_msg;
 
         public ViewHolder(View itemView) {
@@ -88,18 +79,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
             username = itemView.findViewById(R.id.username);
             profile_image = itemView.findViewById(R.id.profile_image);
-            img_on = itemView.findViewById(R.id.img_on);
-            img_off = itemView.findViewById(R.id.img_off);
             last_msg = itemView.findViewById(R.id.last_msg);
         }
     }
 
     //check for last message
-    private void lastMessage(final String userid, final TextView last_msg){
+    private void lastMessage(final User user, final TextView last_msg){
+        String userid = user.getUid();
         theLastMessage = "default";
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         String chatID = generateChatID(userid, firebaseUser.getUid());
-
         MessageHelper.getMessageCollectionForChat(chatID).addSnapshotListener((queryDocumentSnapshots, e) -> {
             MessageHelper.getLastMessageForChat(chatID).get().addOnSuccessListener(queryDocumentSnapshots1 -> {
                 for (DocumentSnapshot document : queryDocumentSnapshots1.getDocuments()) {

@@ -1,4 +1,4 @@
-package fr.testappli.googlemapapi;
+package fr.testappli.googlemapapi.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -15,19 +15,17 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 
-import fr.testappli.googlemapapi.models.Chat;
+import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.models.Message2;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
-    public static  final int MSG_TYPE_LEFT = 0;
-    public static  final int MSG_TYPE_RIGHT = 1;
+    private static  final int MSG_TYPE_LEFT = 0;
+    private static  final int MSG_TYPE_RIGHT = 1;
 
     private Context mContext;
     private List<Message2> mMessage;
     private String imageurl;
-
-    FirebaseUser fuser;
 
     public MessageAdapter(Context mContext, List<Message2> mMessage, String imageurl){
         this.mMessage = mMessage;
@@ -76,13 +74,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         return mMessage.size();
     }
 
-    public  class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder{
 
-        public TextView show_message;
-        public ImageView profile_image;
-        public TextView txt_seen;
+        private TextView show_message;
+        private ImageView profile_image;
+        private TextView txt_seen;
 
-        public ViewHolder(View itemView) {
+        private ViewHolder(View itemView) {
             super(itemView);
 
             show_message = itemView.findViewById(R.id.show_message);
@@ -93,7 +91,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public int getItemViewType(int position) {
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser fuser = FirebaseAuth.getInstance().getCurrentUser();
         if (mMessage.get(position).getSender().equals(fuser.getUid())){
             return MSG_TYPE_RIGHT;
         } else {

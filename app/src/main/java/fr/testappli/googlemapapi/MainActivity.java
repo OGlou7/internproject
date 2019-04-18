@@ -33,7 +33,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.Status;
@@ -55,9 +54,6 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -66,6 +62,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import fr.testappli.googlemapapi.adapter.MyRecyclerViewAdapter;
 import fr.testappli.googlemapapi.api.GarageHelper;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.auth.ProfileActivity;
@@ -119,13 +116,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             EasyPermissions.requestPermissions(this, getString(R.string.popup_title_permission_files_access), RC_IMAGE_PERMS, PERMS);
             return;
         }
-
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        firestore.setFirestoreSettings(settings);
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
         configureToolbar();
         configureDrawerLayout();
@@ -183,7 +173,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
         
     // CONFIGURATION
 
-    void configureMapPointers(){
+    private void configureMapPointers(){
         // Get All Users
         garagesDisplayedInRecyclerView.clear();
         UserHelper.getUsersCollection().get()
@@ -200,7 +190,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 });
     }
 
-    void displayAllAvailableGaragesForUser(String user_uid){
+    private void displayAllAvailableGaragesForUser(String user_uid){
         // Get All Garages
         GarageHelper.getAllGarageForUser(user_uid).get()
                 .addOnCompleteListener(task -> {
@@ -223,7 +213,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 });
     }
 
-    void createGarageRecyclerView(ArrayList<Garage> garageArrayList){
+    private void createGarageRecyclerView(ArrayList<Garage> garageArrayList){
         ArrayList<String> addressToMark = new ArrayList<>();
         for(Garage garage : garageArrayList) addressToMark.add(garage.getAddress());
         setAddressMarkers(addressToMark);
@@ -259,14 +249,14 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
 
-    void configureToolbar(){
+    private void configureToolbar(){
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
     }
 
 
-    void configureMap(){
+    private void configureMap(){
         // Map Fragment
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
         assert supportMapFragment != null;
@@ -295,7 +285,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
             @Override
             public void onError(@NonNull Status status) {
-                // TODO: Handle the error.
                 Log.e("ERROR", "An error occurred: " + status);
             }
         });
@@ -447,17 +436,6 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_search:
-                if (this.getCurrentUser() != null) {
-                    AuthUI.getInstance()
-                            .signOut(this)
-                            .addOnSuccessListener(command -> finish());
-                    UserHelper.deleteUser(this.getCurrentUser().getUid()).addOnFailureListener(this.onFailureListener());
-                    AuthUI.getInstance()
-                            .delete(this)
-                            .addOnSuccessListener(command -> finish());
-                }
-                return true;
             case R.id.action_quit:
                 finish();
                 return true;
@@ -518,7 +496,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
                 firstTimeFlag = false;
             }
             showMarker(currentLocation);
-            Address currentAddress = getAddressFromLatLong(getApplicationContext(), currentLocation.getLatitude(), currentLocation.getLongitude());
+            //Address currentAddress = getAddressFromLatLong(getApplicationContext(), currentLocation.getLatitude(), currentLocation.getLongitude());
             //Toast.makeText(getApplicationContext(), Objects.requireNonNull(currentAddress).getAddressLine(0), Toast.LENGTH_SHORT).show();
         }
     };
@@ -549,7 +527,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
 
 
     // Method to get address from latitude and longitude
-    public static Address getAddressFromLatLong(Context context, double lat, double lng) {
+    /*public static Address getAddressFromLatLong(Context context, double lat, double lng) {
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());
 
         List<Address> list;
@@ -560,7 +538,7 @@ public class MainActivity extends BaseActivity implements OnMapReadyCallback {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 
 
     // Method to add marker on map on the given address

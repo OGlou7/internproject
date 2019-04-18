@@ -1,18 +1,10 @@
 package fr.testappli.googlemapapi.api;
 
-import android.util.Log;
-
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
-import java.util.Objects;
-
 import fr.testappli.googlemapapi.models.Garage;
-import fr.testappli.googlemapapi.models.NonAvailableTime;
 
 public class GarageHelper {
 
@@ -27,7 +19,7 @@ public class GarageHelper {
     // --- CREATE ---
 
     public static Task<Void> createGarageForUser(String user_uid, String garage_uid, String address, String description, double price, String rentalTime){
-        Garage garageToCreate = new Garage(garage_uid, address, description, price, rentalTime);
+        Garage garageToCreate = new Garage(garage_uid, address, description, price, rentalTime, user_uid);
         return GarageHelper.getGaragesCollection(user_uid)
                 .document(garage_uid)
                 .set(garageToCreate);

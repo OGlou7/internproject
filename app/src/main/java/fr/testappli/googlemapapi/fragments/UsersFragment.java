@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import fr.testappli.googlemapapi.R;
-import fr.testappli.googlemapapi.UserAdapter;
+import fr.testappli.googlemapapi.adapter.UserAdapter;
 import fr.testappli.googlemapapi.api.UserHelper;
 import fr.testappli.googlemapapi.models.User;
 

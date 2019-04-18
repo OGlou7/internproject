@@ -1,17 +1,13 @@
 package fr.testappli.googlemapapi.base;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 
 import butterknife.ButterKnife;
 import fr.testappli.googlemapapi.R;

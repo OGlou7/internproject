@@ -20,7 +20,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
-import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -43,10 +42,6 @@ import java.util.Locale;
 import fr.testappli.googlemapapi.DateTimeInterpreter;
 import fr.testappli.googlemapapi.R;
 
-/**
- * Created by Raquib-ul-Alam Kanak on 7/21/2014.
- * Website: http://alamkanak.github.io/
- */
 public class WeekView extends View {
 
     private enum Direction {
@@ -1340,18 +1335,6 @@ public class WeekView extends View {
         return mFirstDayOfWeek;
     }
 
-    /**
-     * Set the first day of the week. First day of the week is used only when the week view is first
-     * drawn. It does not of any effect after user starts scrolling horizontally.
-     * <p>
-     *     <b>Note:</b> This method will only work if the week view is set to display more than 6 days at
-     *     once.
-     * </p>
-     * @param firstDayOfWeek The supported values are {@link java.util.Calendar#SUNDAY},
-     * {@link java.util.Calendar#MONDAY}, {@link java.util.Calendar#TUESDAY},
-     * {@link java.util.Calendar#WEDNESDAY}, {@link java.util.Calendar#THURSDAY},
-     * {@link java.util.Calendar#FRIDAY}.
-     */
     public void setFirstDayOfWeek(int firstDayOfWeek) {
         mFirstDayOfWeek = firstDayOfWeek;
         invalidate();

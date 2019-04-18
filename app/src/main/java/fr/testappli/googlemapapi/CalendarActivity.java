@@ -3,20 +3,16 @@ package fr.testappli.googlemapapi;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.applandeo.materialcalendarview.EventDay;
 import com.applandeo.materialcalendarview.exceptions.OutOfDateRangeException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-
-import android.support.v7.widget.Toolbar;
-import android.widget.Toast;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,27 +36,33 @@ public class CalendarActivity extends BaseActivity {
     private Garage garageClicked;
 
     public final static int WEEKACTIVITY_REQUEST = 0;
-    public final static int TIME_PICKER_INTERVAL = 30;
 
     @SuppressLint("SimpleDateFormat")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calendar_activity);
-        calendarView = findViewById(R.id.calendarView);
+
+        configureToolbar();
+        configureCalendar();
 
         Intent intent = getIntent();
         Bundle bundleGarage = Objects.requireNonNull(intent.getExtras()).getBundle("garageClicked");
         garageClicked = (Garage) Objects.requireNonNull(Objects.requireNonNull(bundleGarage).getSerializable("garageClicked"));
         getAllNonAvailableTimeForGarage();
+    }
 
+    private void configureToolbar(){
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         toolbar.setNavigationOnClickListener(v -> finish());
+    }
 
+    private void configureCalendar(){
+        calendarView = findViewById(R.id.calendarView);
         currentCalendar = Calendar.getInstance();
         calendarView.setHeaderColor(R.color.calendar_header_color);
         calendarView.setHeaderLabelColor(R.color.colorBlack);
@@ -126,19 +128,19 @@ public class CalendarActivity extends BaseActivity {
         return weekViewEventArrayList;
     }
 
-    public ArrayList<Date> getDaysBetween(Date start, Date end){
-        ArrayList<Date> daysBetween = new ArrayList<>();
-        Calendar startCalendar = Calendar.getInstance();
-        startCalendar.setTime(start);
-        daysBetween.add(start);
-
-        while (startCalendar.before(getDatePart(end))){
-            startCalendar.add(Calendar.DAY_OF_YEAR,1);
-            Date newDate = startCalendar.getTime();
-            daysBetween.add(newDate);
-        }
-        return daysBetween;
-    }
+//    public ArrayList<Date> getDaysBetween(Date start, Date end){
+//        ArrayList<Date> daysBetween = new ArrayList<>();
+//        Calendar startCalendar = Calendar.getInstance();
+//        startCalendar.setTime(start);
+//        daysBetween.add(start);
+//
+//        while (startCalendar.before(getDatePart(end))){
+//            startCalendar.add(Calendar.DAY_OF_YEAR,1);
+//            Date newDate = startCalendar.getTime();
+//            daysBetween.add(newDate);
+//        }
+//        return daysBetween;
+//    }
 
     public static Calendar getDatePart(Date date){
         Calendar cal = Calendar.getInstance();

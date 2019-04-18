@@ -17,6 +17,7 @@ import java.util.Objects;
 
 import fr.testappli.googlemapapi.CalendarActivity;
 import fr.testappli.googlemapapi.R;
+import fr.testappli.googlemapapi.adapter.GarageListAdapter;
 import fr.testappli.googlemapapi.api.GarageHelper;
 import fr.testappli.googlemapapi.base.BaseActivity;
 import fr.testappli.googlemapapi.form.GarageForm;
@@ -104,7 +105,8 @@ public class GarageActivity extends BaseActivity {
             // OnItemLongClickListener
             item -> new AlertDialog.Builder(this)
                         .setMessage(R.string.popup_message_confirmation_delete_garage)
-                        .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(Objects.requireNonNull(getCurrentUser()).getUid(), item.getUid()))
+                        .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> GarageHelper.deleteGarage(Objects.requireNonNull(getCurrentUser()).getUid(),
+                                item.getUid()).addOnFailureListener(this.onFailureListener()))
                         .setNegativeButton(R.string.popup_message_choice_no, null)
                         .show(),
             // OnMoreImageClickListener
@@ -131,7 +133,8 @@ public class GarageActivity extends BaseActivity {
                 popup.show();
             },
             // onCheckClickListener
-            (v, g) -> GarageHelper.updateisAvailable(Objects.requireNonNull(getCurrentUser()).getUid(), g.getUid(), ((CheckBox)v.findViewById(R.id.cb_row_garage_is_reserved)).isChecked())
+            (v, g) -> GarageHelper.updateisAvailable(Objects.requireNonNull(getCurrentUser()).getUid(), g.getUid(),
+                    ((CheckBox)v.findViewById(R.id.cb_row_garage_is_reserved)).isChecked()).addOnFailureListener(this.onFailureListener())
         );
 
         garageListAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {

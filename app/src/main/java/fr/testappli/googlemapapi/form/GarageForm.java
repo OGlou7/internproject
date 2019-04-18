@@ -193,9 +193,10 @@ public class GarageForm extends BaseActivity {
                 return;
             }
 
-            Toast.makeText(this, "Garage en location de "
-                    + np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + " à "
-                    + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()], Toast.LENGTH_SHORT).show();
+            if(!cb_rent_all_day.isChecked())
+                Toast.makeText(this, "Garage en location de "
+                        + np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + " à "
+                        + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()], Toast.LENGTH_SHORT).show();
 
             String rentalTime = cb_rent_all_day.isChecked() ? "" :
                     np_starttimepicker.getDisplayedValues()[np_starttimepicker.getValue()] + "/" + np_endtimepicker.getDisplayedValues()[np_endtimepicker.getValue()];
@@ -212,10 +213,10 @@ public class GarageForm extends BaseActivity {
     }
 
     private void updateGarageInFirestore(String garageID, String address,String description,double price, String rentalTime){
-        GarageHelper.updateAddress(Objects.requireNonNull(getCurrentUser()).getUid(), garageID, address);
-        GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description);
-        GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price);
-        GarageHelper.updateRentalTime(getCurrentUser().getUid(), garageID, rentalTime);
+        GarageHelper.updateAddress(Objects.requireNonNull(getCurrentUser()).getUid(), garageID, address).addOnFailureListener(this.onFailureListener());
+        GarageHelper.updateDescription(getCurrentUser().getUid(), garageID, description).addOnFailureListener(this.onFailureListener());
+        GarageHelper.updatePrice(getCurrentUser().getUid(), garageID, price).addOnFailureListener(this.onFailureListener());
+        GarageHelper.updateRentalTime(getCurrentUser().getUid(), garageID, rentalTime).addOnFailureListener(this.onFailureListener());
     }
 }
 

@@ -44,7 +44,7 @@
         </activity>
 
         <activity
-            android:name=".base.LoginActivity"
+            android:name=".auth.LoginActivity"
             android:label="@string/login_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
@@ -123,16 +123,6 @@
             android:name=".notifications.MyFirebaseMessaging">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".notifications.MyFirebaseIdService"
-            android:enabled="true"
-            android:stopWithTask="false"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
         </service>
 

@@ -153,8 +153,8 @@ public class WeekActivity extends BaseActivity {
             int daysInMonth = test.getActualMaximum(Calendar.DAY_OF_MONTH);
             for (int i = 1; i <= daysInMonth; i++) {
                 try {
-                    startdate = format.parse(String.valueOf(newYear) + "-" + String.valueOf(newMonth) + "-" + String.valueOf(i) + "T" + endRentalTime + "Z");
-                    enddate = format.parse(String.valueOf(newYear) + "-" + String.valueOf(newMonth) + "-" + String.valueOf(i + 1) + "T" + startRentalTime + "Z");
+                    startdate = format.parse(newYear + "-" + newMonth + "-" + i + "T" + endRentalTime + "Z");
+                    enddate = format.parse(newYear + "-" + newMonth + "-" + (i + 1) + "T" + startRentalTime + "Z");
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -256,25 +256,25 @@ public class WeekActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void testtest(){
-        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-
-        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.date_range_picker,null);
-
-        PopupWindow mPopupWindow = new PopupWindow(
-                customView,
-                ActionBar.LayoutParams.MATCH_PARENT,
-                ActionBar.LayoutParams.MATCH_PARENT
-        );
-
-        mPopupWindow.setFocusable(true);
-        mPopupWindow.update();
-
-
-        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-    }
+//    private void testtest(){
+//        LayoutInflater inflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);
+//
+//        @SuppressLint("InflateParams") View customView = inflater.inflate(R.layout.date_range_picker,null);
+//
+//        PopupWindow mPopupWindow = new PopupWindow(
+//                customView,
+//                ActionBar.LayoutParams.MATCH_PARENT,
+//                ActionBar.LayoutParams.MATCH_PARENT
+//        );
+//
+//        mPopupWindow.setFocusable(true);
+//        mPopupWindow.update();
+//
+//
+//        mPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+//        mPopupWindow.showAtLocation(findViewById(R.id.relativeLayout_weekActivity), Gravity.CENTER,0,0);
+//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+//    }
 
 
     public static Calendar dateToCalendar(Date date){
@@ -547,7 +547,7 @@ public class WeekActivity extends BaseActivity {
     }
 
     private void deleteNonAvailableTimeInFirestore(WeekViewEvent weekViewEvent){
-        NonAvailableTimeHelper.deleteDateNonDispo(Objects.requireNonNull(getCurrentUser()).getUid(), garageClicked.getUid(), weekViewEvent.getId());
+        NonAvailableTimeHelper.deleteDateNonDispo(Objects.requireNonNull(getCurrentUser()).getUid(), garageClicked.getUid(), weekViewEvent.getId()).addOnFailureListener(this.onFailureListener());
         if (mNewEvents.contains(weekViewEvent)) {
             mNewEvents.remove(weekViewEvent);
         } else if(mOldEvents.contains(weekViewEvent)){

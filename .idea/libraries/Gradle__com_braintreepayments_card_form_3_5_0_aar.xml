@@ -1,11 +1,11 @@
 <component name="libraryTable">
   <library name="Gradle: com.braintreepayments:card-form:3.5.0@aar">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/card-form-3.5.0.aar/d83cb44f0c3a141dedae661e8149f580/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/c11ac12b5433482708cb4a5821610499/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/card-form-3.5.0.aar/d83cb44f0c3a141dedae661e8149f580/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/card-form-3.5.0.aar/d83cb44f0c3a141dedae661e8149f580/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/c11ac12b5433482708cb4a5821610499/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/c11ac12b5433482708cb4a5821610499/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

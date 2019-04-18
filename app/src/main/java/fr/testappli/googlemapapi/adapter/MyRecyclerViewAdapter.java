@@ -1,25 +1,20 @@
-package fr.testappli.googlemapapi;
+package fr.testappli.googlemapapi.adapter;
 
 import android.content.Context;
-import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import fr.testappli.googlemapapi.R;
 import fr.testappli.googlemapapi.models.Garage;
 
-class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
+public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.ViewHolder> {
 
     public void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
@@ -44,7 +39,7 @@ class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.V
     private ItemClickListener mClickListener;
     private NavigationClickListener mNavigationClickListener;
 
-    MyRecyclerViewAdapter(Context context, ArrayList<Garage> garageDataList) {
+    public MyRecyclerViewAdapter(Context context, ArrayList<Garage> garageDataList) {
         this.mInflater = LayoutInflater.from(context);
         this.garageDataList = garageDataList;
         this.contextAdapter = context;
@@ -62,13 +57,13 @@ class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAdapter.V
         holder.setContext(contextAdapter);
         Garage data = garageDataList.get(position);
         holder.address.setText(data.getAddress().split(", ")[0]);
-        holder.city.setText(data.getAddress().split(", ")[1].replaceAll("^[\\s\\.\\d]+", ""));
+        holder.city.setText(data.getAddress().split(", ")[1].replaceAll("^[\\s.\\d]+", ""));
         holder.price.setText(String.format("%s€", String.valueOf(data.getPrice())));
         holder.itemView.setOnClickListener(v -> mClickListener.onItemClick(holder.itemView, position));
         holder.navigate.setOnClickListener(v -> mNavigationClickListener.onItemClick(holder.itemView, position));
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         TextView address, city, price;
         FloatingActionButton navigate;
         Context contextHolder;

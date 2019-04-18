@@ -31,13 +31,20 @@ public class ChatActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        configureToolbar();
+        configureUI();
+    }
+
+    private void configureToolbar(){
         Toolbar toolbar = findViewById(R.id.toolbar_chat);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         toolbar.setNavigationOnClickListener(v -> finish());
+    }
 
+    private void configureUI(){
         profile_image = findViewById(R.id.profile_image);
         username = findViewById(R.id.tv_username);
 
@@ -55,11 +62,48 @@ public class ChatActivity extends BaseActivity {
         ViewPager view_pager_chat = findViewById(R.id.view_pager_chat);
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+
+
         viewPagerAdapter.addFragment(new ChatsFragment(), "chats");
         viewPagerAdapter.addFragment(new UsersFragment(), "users");
 
         view_pager_chat.setAdapter(viewPagerAdapter);
         tab_layout_chat.setupWithViewPager(view_pager_chat);
+
+
+        /*DatabaseReference reference = FirebaseDatabase.getInstance().getReference("chats");
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+                int unread = 0;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    Message2 message2 = snapshot.getValue(Message2.class);
+                    Log.e("TESTTEST222", message2.getMessage());
+                    if (message2.getReceiver().equals(getCurrentUser().getUid()) && !message2.isIsseen()){
+                        unread++;
+                        Log.e("TESTTEST223","" + unread);
+                    }
+                }
+
+                if (unread == 0){
+                    viewPagerAdapter.addFragment(new ChatsFragment(), "Chats");
+                } else {
+                    viewPagerAdapter.addFragment(new ChatsFragment(), "("+unread+") Chats");
+                }
+
+                viewPagerAdapter.addFragment(new UsersFragment(), "Users");
+
+                view_pager_chat.setAdapter(viewPagerAdapter);
+                tab_layout_chat.setupWithViewPager(view_pager_chat);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });*/
     }
 
     @Override

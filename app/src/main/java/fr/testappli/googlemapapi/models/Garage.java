@@ -2,16 +2,6 @@ package fr.testappli.googlemapapi.models;
 
 import android.support.annotation.Nullable;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.UUID;
-
-import fr.testappli.googlemapapi.week.WeekViewEvent;
-
-import static fr.testappli.googlemapapi.week.WeekActivity.dateToCalendar;
-
 public class Garage implements java.io.Serializable{
     private String uid;
     private String address;
@@ -19,6 +9,7 @@ public class Garage implements java.io.Serializable{
     private double price;
     private boolean isAvailable;
     private String rentalTime;
+    private String ownerID;
 
 
     public Garage() { }
@@ -30,15 +21,17 @@ public class Garage implements java.io.Serializable{
         this.price = garage.getPrice();
         this.isAvailable = garage.getisAvailable();
         this.rentalTime = garage.getRentalTime();
+        this.ownerID = garage.getOwnerID();
     }
 
-    public Garage(String uid, String address, @Nullable String description, double price, String rentalTime) {
+    public Garage(String uid, String address, @Nullable String description, double price, String rentalTime, String ownerID) {
         this.uid = uid;
         this.address = address;
         this.description = description;
         this.price = price;
         this.isAvailable = false;
         this.rentalTime = rentalTime;
+        this.ownerID = ownerID;
     }
 
     // --- GETTERS ---
@@ -48,6 +41,8 @@ public class Garage implements java.io.Serializable{
     public double getPrice() { return price; }
     public boolean getisAvailable() { return isAvailable; }
     public String getRentalTime() { return rentalTime; }
+    public String getOwnerID() { return ownerID; }
+
 
     // --- SETTERS ---
     public void setUid(String uid) { this.uid = uid; }
@@ -56,4 +51,5 @@ public class Garage implements java.io.Serializable{
     public void setPrice(double price) { this.price = price; }
     public void setReserved(boolean isAvailable) { this.isAvailable = isAvailable; }
     public void setRentalTime(String rentalTime) { this.rentalTime = rentalTime; }
+    public void setOwnerID(String ownerID) { this.ownerID = ownerID; }
 }

@@ -66,7 +66,27 @@ public class ProfileActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //FOR DESIGN
+
+        configureUI();
+        configureToolbar();
+
+        Intent intent = getIntent();
+        Bundle bundleModelUser = Objects.requireNonNull(intent.getExtras()).getBundle("modelCurrentUser");
+        modelCurrentUser = (User) Objects.requireNonNull(Objects.requireNonNull(bundleModelUser).getSerializable("modelCurrentUser"));
+
+        this.updateUIWhenCreating();
+    }
+
+    private void configureToolbar(){
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(v -> finishActivity());
+    }
+
+    private void configureUI(){
         imageViewProfile = findViewById(R.id.profile_activity_imageview_profile);
         textInputEditTextUsername = findViewById(R.id.profile_activity_edit_text_username);
         TextViewEmail = findViewById(R.id.profile_activity_text_view_email);
@@ -91,22 +111,6 @@ public class ProfileActivity extends BaseActivity {
                 .setPositiveButton(R.string.popup_message_choice_yes, (dialogInterface, i) -> deleteUserFromFirebase())
                 .setNegativeButton(R.string.popup_message_choice_no, null)
                 .show());
-
-        Intent intent = getIntent();
-        Bundle bundleModelUser = Objects.requireNonNull(intent.getExtras()).getBundle("modelCurrentUser");
-        modelCurrentUser = (User) Objects.requireNonNull(Objects.requireNonNull(bundleModelUser).getSerializable("modelCurrentUser"));
-
-        //TOOLBAR
-        // setup the toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-        toolbar.setNavigationOnClickListener(v -> finishActivity());
-
-        this.updateUIWhenCreating();
     }
 
     private void finishActivity(){
@@ -233,9 +237,7 @@ public class ProfileActivity extends BaseActivity {
     @Override
     public void onBackPressed() { finishActivity(); }
 
-    // --------------------
     // REST REQUESTS
-    // --------------------
     private void chooseImageFromPhone(){
         if (!EasyPermissions.hasPermissions(this, PERMS)) {
             EasyPermissions.requestPermissions(this, getString(R.string.popup_title_permission_files_access), RC_IMAGE_PERMS, PERMS);
@@ -280,7 +282,7 @@ public class ProfileActivity extends BaseActivity {
                 .addOnSuccessListener(this, taskSnapshot -> {
                     Task<Uri> firebaseUri = taskSnapshot.getStorage().getDownloadUrl();
                     firebaseUri.addOnSuccessListener(uri -> {
-                        UserHelper.updatePhotoURI(Objects.requireNonNull(getCurrentUser()).getUid(), uri.toString());
+                        UserHelper.updatePhotoURI(Objects.requireNonNull(getCurrentUser()).getUid(), uri.toString()).addOnFailureListener(this.onFailureListener());
                         modelCurrentUser.setUrlPicture(uri.toString());
                     });
 
