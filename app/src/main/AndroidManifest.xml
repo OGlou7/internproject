@@ -37,14 +37,14 @@
         <!--"com.google.android.geo.API_KEY"-->
 
         <activity
-            android:name=".MainActivity"
+            android:name="fr.testappli.googlemapapi.MainActivity"
             android:label="@string/label_activity_main"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".auth.LoginActivity"
+            android:name="fr.testappli.googlemapapi.auth.LoginActivity"
             android:label="@string/login_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
@@ -56,63 +56,63 @@
         </activity>
 
         <activity
-            android:name=".auth.ProfileActivity"
+            android:name="fr.testappli.googlemapapi.auth.ProfileActivity"
             android:label="@string/profileactivity_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".CalendarActivity"
+            android:name="fr.testappli.googlemapapi.CalendarActivity"
             android:label="@string/calendar_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".week.WeekActivity"
+            android:name="fr.testappli.googlemapapi.week.WeekActivity"
             android:label="@string/calendar_title"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".vendor_chat.VendorChatActivity"
+            android:name="fr.testappli.googlemapapi.vendor_chat.VendorChatActivity"
             android:label="@string/toolbar_title_vendor_chat_activity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".chat.ChatActivity"
+            android:name="fr.testappli.googlemapapi.chat.ChatActivity"
             android:label="@string/toolbar_title_vendor_chat_activity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".chat.MessageActivity"
+            android:name="fr.testappli.googlemapapi.chat.MessageActivity"
             android:label="@string/toolbar_title_vendor_chat_activity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".garage.GarageActivity"
+            android:name="fr.testappli.googlemapapi.garage.GarageActivity"
             android:label="Garage List"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <activity
-            android:name=".form.GarageForm"
+            android:name="fr.testappli.googlemapapi.form.GarageForm"
             android:label="Garage Form"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>
 
         <!-- BRAINTREE & RESERVATION -->
-        <activity android:name=".form.ReservationForm"
+        <activity android:name="fr.testappli.googlemapapi.form.ReservationForm"
             android:label="Reservation Form"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
@@ -120,7 +120,7 @@
 
         <!-- NOTIFICATION SERVICE -->
         <service
-            android:name=".notifications.MyFirebaseMessaging">
+            android:name="fr.testappli.googlemapapi.notifications.MyFirebaseMessaging">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>

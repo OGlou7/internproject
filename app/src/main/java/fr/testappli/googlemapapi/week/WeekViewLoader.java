@@ -3,8 +3,6 @@ package fr.testappli.googlemapapi.week;
 import java.util.Calendar;
 import java.util.List;
 
-import fr.testappli.googlemapapi.week.WeekViewEvent;
-
 public interface WeekViewLoader {
     /**
      * Convert a date into a double that will be used to reference when you're loading data.

@@ -68,8 +68,9 @@ public class ChatsFragment extends Fragment {
                                 usersList.add(user);
                             }
                             if (task1.isComplete()) {
-                                size--;
-                                if (size == 1) updateUI();
+                                updateUI();
+//                                size--;
+//                                if (size <= 1) updateUI();
                             }
                         });
                     }
